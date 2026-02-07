@@ -103,11 +103,42 @@ class _LogoMark extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: SvgPicture.asset(
-        'assets/icons/park_ticket_logo.svg',
-        height: 80.h,
-        width: 80.h,
-        fit: BoxFit.contain,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+
+        children: [
+          SvgPicture.asset(
+            'assets/icons/park_ticket_logo.svg',
+            height: 60.h,
+            width: 60.h,
+            colorFilter: ColorFilter.mode(
+              const Color.fromARGB(255, 239, 246, 248),
+              BlendMode.srcIn,
+            ),
+            fit: BoxFit.contain,
+          ),
+          SizedBox(width: 4.w),
+          Column(
+            children: [
+              Text(
+                'Park Ticket',
+                style: TextStyle(
+                  fontSize: 24.sp,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+              Text(
+                'Adventure Begins Here',
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -310,25 +341,6 @@ class _HeroPainter extends CustomPainter {
             ),
           );
     canvas.drawRect(rect, skyPaint);
-
-    final sunRadius = size.width * 0.35;
-    final sunRect = Rect.fromCircle(
-      center: Offset(size.width * 0.74, size.height * 0.28),
-      radius: sunRadius,
-    );
-    final sunPaint = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          const Color.fromARGB(255, 19, 208, 183).withOpacity(0.75),
-          const Color.fromARGB(255, 130, 157, 162).withOpacity(0.25),
-        ],
-        center: Alignment(
-          0.2 * math.sin(cycle * 0.8),
-          0.2 * math.cos(cycle * 0.8),
-        ),
-        radius: 0.9,
-      ).createShader(sunRect);
-    canvas.drawCircle(sunRect.center, sunRadius, sunPaint);
 
     final ridgeOne = Path()
       ..moveTo(0, size.height * 0.62)
