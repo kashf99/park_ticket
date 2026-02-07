@@ -3,15 +3,29 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:park_ticket/features/attraction/presentation/widgets/attraction_content.dart';
 import 'package:park_ticket/features/attraction/presentation/widgets/attraction_error.dart';
 
+import '../../domain/entities/attraction.dart';
 import '../providers/attraction_provider.dart';
 
 class AttractionPage extends ConsumerWidget {
-  const AttractionPage({super.key, this.attractionId = '1'});
+  const AttractionPage({
+    super.key,
+    this.attractionId = '1',
+    this.attraction,
+  });
 
   final String attractionId;
+  final Attraction? attraction;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (attraction != null) {
+      return Scaffold(
+        body: SafeArea(
+          child: AttractionContent(attraction: attraction!),
+        ),
+      );
+    }
+
     final attractionAsync = ref.watch(attractionProvider(attractionId));
 
     return Scaffold(

@@ -1,3 +1,4 @@
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:park_ticket/core/network/api_client.dart';
@@ -5,10 +6,8 @@ import 'package:park_ticket/core/network/api_client.dart';
 import '../../../booking/domain/entities/booking.dart';
 import '../../../booking/presentation/providers/booking_provider.dart';
 import '../../../ticket/domain/entities/ticket.dart';
-import '../../../ticket/presentation/providers/ticket_provider.dart';
 import '../../../ticket/presentation/providers/ticket_session_provider.dart';
 import '../../domain/entities/payment.dart';
-import 'payment_provider.dart';
 
 class PaymentFlowState {
   final bool isProcessing;
@@ -46,99 +45,99 @@ class PaymentFlowController extends AutoDisposeNotifier<PaymentFlowState> {
   @override
   PaymentFlowState build() => PaymentFlowState.initial();
 
-  Future<Ticket?> confirm(Booking booking) async {
-    if (state.isProcessing) return null;
-    state = state.copyWith(isProcessing: true, errorMessage: null);
+  confirm(Booking booking) async {
+    if (_isAlreadyProcessing()) return;
+    _startProcessing();
     try {
-      var confirmedBooking = booking;
-      if (booking.id.isEmpty) {
-        final createBooking = ref.read(createBookingProvider);
-        confirmedBooking = await createBooking(booking);
-      }
-
-      final confirmPayment = ref.read(confirmPaymentProvider);
-      var payment = await confirmPayment(confirmedBooking.id);
-      payment = payment.copyWith(
-        booking: payment.booking ?? confirmedBooking,
-      );
-      if (payment.ticket != null) {
-        state = state.copyWith(payment: payment);
-        ref.read(lastTicketBookingIdProvider.notifier).state =
-            confirmedBooking.id;
-        ref.read(lastTicketSnapshotProvider.notifier).state = TicketSnapshot(
-          booking: payment.booking ?? confirmedBooking,
-          ticket: payment.ticket!,
-        );
-        ref.read(ticketHistoryProvider.notifier).upsert(
-              TicketSnapshot(
-                booking: payment.booking ?? confirmedBooking,
-                ticket: payment.ticket!,
-              ),
-            );
-        return payment.ticket;
-      }
-
-      final getTicket = ref.read(getTicketProvider);
-      final ticket = await getTicket(confirmedBooking.id);
-      payment = payment.copyWith(ticket: ticket);
-      state = state.copyWith(payment: payment);
-      ref.read(lastTicketBookingIdProvider.notifier).state =
-          confirmedBooking.id;
-      ref.read(lastTicketSnapshotProvider.notifier).state = TicketSnapshot(
-        booking: payment.booking ?? confirmedBooking,
-        ticket: ticket,
-      );
-      ref.read(ticketHistoryProvider.notifier).upsert(
-            TicketSnapshot(
-              booking: payment.booking ?? confirmedBooking,
-              ticket: ticket,
-            ),
-          );
-      return ticket;
+      await _ensureBookingHasId(booking);
+      //  final payment = await _confirmPaymentForBooking(confirmedBooking);
+      // final ticket = await _resolveTicket(confirmedBooking);
+      // _recordSuccessfulTicket(booking: confirmedBooking, ticket: ticket);
     } on ApiException catch (error) {
       if (error.type == ApiErrorType.unknown) {
-        final fallbackBooking =
-            booking.id.isEmpty ? _withBookingId(booking) : booking;
-        final ticket = _fallbackTicket(fallbackBooking);
-        final payment = Payment(
-          bookingId: fallbackBooking.id,
-          amountCents: fallbackBooking.totalCents,
-          status: 'confirmed',
-          booking: fallbackBooking,
-          ticket: ticket,
-        );
-        state = state.copyWith(payment: payment, errorMessage: null);
-        ref.read(lastTicketBookingIdProvider.notifier).state =
-            fallbackBooking.id;
-        ref.read(lastTicketSnapshotProvider.notifier).state = TicketSnapshot(
-          booking: fallbackBooking,
-          ticket: ticket,
-        );
-        ref.read(ticketHistoryProvider.notifier).upsert(
-              TicketSnapshot(
-                booking: fallbackBooking,
-                ticket: ticket,
-              ),
-            );
-        return ticket;
+        _handleUnknownApiFailure(booking);
       }
       debugPrint('PaymentFlow ApiException: $error');
-      state = state.copyWith(errorMessage: error.toString());
+      _setError(error.toString());
       return null;
     } catch (error) {
       debugPrint('PaymentFlow error: $error');
-      state = state.copyWith(errorMessage: error.toString());
+      _setError(error.toString());
       return null;
     } finally {
-      state = state.copyWith(isProcessing: false);
+      _stopProcessing();
     }
+  }
+
+  bool _isAlreadyProcessing() => state.isProcessing;
+
+  void _startProcessing() {
+    state = state.copyWith(isProcessing: true, errorMessage: null);
+  }
+
+  void _stopProcessing() {
+    state = state.copyWith(isProcessing: false);
+  }
+
+  void _setError(String message) {
+    state = state.copyWith(errorMessage: message);
+  }
+
+  Future<Booking> _ensureBookingHasId(Booking booking) async {
+    if (booking.id.isNotEmpty) return booking;
+    final createBooking = ref.read(createBookingProvider);
+    return createBooking(booking);
+  }
+
+  // Future<Payment> _confirmPaymentForBooking(Booking booking) async {
+  //   final confirmPayment = ref.read(confirmPaymentProvider);
+  //   final payment = await confirmPayment(booking.id);
+  //   return payment.copyWith(booking: payment.booking ?? booking);
+  // }
+
+  // Future<Ticket> _resolveTicket(Booking booking) async {
+  //   final getTicket = ref.read(getTicketProvider);
+  //   final lookup = booking.email.trim().isNotEmpty ? booking.email : booking.id;
+  //   try {
+  //     return await getTicket(lookup);
+  //   } catch (_) {
+  //     return _fallbackTicket(booking);
+  //   }
+  // }
+
+  void _recordSuccessfulTicket({
+    required Booking booking,
+
+    required Ticket ticket,
+  }) {
+    ref.read(lastTicketBookingIdProvider.notifier).state = booking.id;
+    final snapshot = TicketSnapshot(booking: booking, ticket: ticket);
+    ref.read(lastTicketSnapshotProvider.notifier).state = snapshot;
+    ref.read(ticketHistoryProvider.notifier).upsert(snapshot);
+  }
+
+  Ticket _handleUnknownApiFailure(Booking booking) {
+    final fallbackBooking = booking.id.isEmpty
+        ? _withBookingId(booking)
+        : booking;
+    final ticket = _fallbackTicket(fallbackBooking);
+    final payment = Payment(
+      bookingId: fallbackBooking.id,
+      amountCents: fallbackBooking.totalCents,
+      status: 'confirmed',
+      booking: fallbackBooking,
+      ticket: ticket,
+    );
+    state = state.copyWith(payment: payment, errorMessage: null);
+    _recordSuccessfulTicket(booking: fallbackBooking, ticket: ticket);
+    return ticket;
   }
 }
 
 final paymentFlowControllerProvider =
     AutoDisposeNotifierProvider<PaymentFlowController, PaymentFlowState>(
-  PaymentFlowController.new,
-);
+      PaymentFlowController.new,
+    );
 
 String _fallbackBookingId() {
   final now = DateTime.now();
@@ -157,6 +156,12 @@ Booking _withBookingId(Booking booking) {
     totalCents: booking.totalCents,
     status: booking.status,
     qrToken: booking.qrToken,
+    attractionName: booking.attractionName,
+    totalAmount: booking.totalAmount,
+    taxAmount: booking.taxAmount,
+    finalAmount: booking.finalAmount,
+    paymentReference: booking.paymentReference,
+    qrCodeImage: booking.qrCodeImage,
   );
 }
 

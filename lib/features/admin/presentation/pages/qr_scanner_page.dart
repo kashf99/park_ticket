@@ -21,6 +21,7 @@ class QrScannerPage extends ConsumerWidget {
       if (capture.barcodes.isEmpty) return;
       final value = capture.barcodes.first.rawValue;
       if (value == null || value.trim().isEmpty) return;
+      debugPrint('QR detected: ${value.trim()}');
 
       ref.read(qrScannerHasScannedProvider.notifier).state = true;
       if (!context.mounted) return;

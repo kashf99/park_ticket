@@ -1,5 +1,6 @@
-import '../entities/ticket.dart';
+import '../entities/ticket_record.dart';
 
 abstract class TicketRepository {
-  Future<Ticket> getTicket(String bookingId);
+
+  Future<List<TicketRecord>> getTicketHistory();
 }

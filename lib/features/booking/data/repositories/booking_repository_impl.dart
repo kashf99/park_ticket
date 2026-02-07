@@ -20,6 +20,12 @@ class BookingRepositoryImpl implements BookingRepository {
       totalCents: booking.totalCents,
       status: booking.status,
       qrToken: booking.qrToken,
+      attractionName: booking.attractionName,
+      totalAmount: booking.totalAmount,
+      taxAmount: booking.taxAmount,
+      finalAmount: booking.finalAmount,
+      paymentReference: booking.paymentReference,
+      qrCodeImage: booking.qrCodeImage,
     );
     return remote.createBooking(model);
   }

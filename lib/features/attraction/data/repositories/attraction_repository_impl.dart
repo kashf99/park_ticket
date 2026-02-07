@@ -10,4 +10,9 @@ class AttractionRepositoryImpl implements AttractionRepository {
   Future<Attraction> getAttraction(String id) {
     return remote.fetchAttraction(id);
   }
+
+  @override
+  Future<List<Attraction>> getAttractions() {
+    return remote.fetchAttractions();
+  }
 }

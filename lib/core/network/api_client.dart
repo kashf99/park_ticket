@@ -42,35 +42,39 @@ class ApiException implements Exception {
 
 class ApiClient {
   ApiClient({Dio? dio, String? baseUrl})
-      : _dio = dio ??
-            Dio(
-              BaseOptions(
-                baseUrl: baseUrl ??
-                    const String.fromEnvironment(
-                      'API_BASE_URL',
-                      defaultValue: '',
-                    ),
-                connectTimeout: const Duration(seconds: 15),
-                receiveTimeout: const Duration(seconds: 15),
-                sendTimeout: const Duration(seconds: 15),
-                responseType: ResponseType.json,
-                headers: const {
-                  'accept': 'application/json',
-                  'content-type': 'application/json',
-                },
-              ),
-            );
+    : _dio =
+          dio ??
+          Dio(
+            BaseOptions(
+              baseUrl:
+                  baseUrl ??
+                  const String.fromEnvironment(
+                    'API_BASE_URL',
+                    defaultValue: '',
+                  ),
+              connectTimeout: const Duration(seconds: 15),
+              receiveTimeout: const Duration(seconds: 15),
+              sendTimeout: const Duration(seconds: 15),
+              responseType: ResponseType.json,
+              headers: const {
+                'accept': 'application/json',
+                'content-type': 'application/json',
+              },
+            ),
+          );
 
   final Dio _dio;
 
   Future<JsonMap> get(
-    String path, {
+    String path,
+    Map<String, String> map, {
     Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,
   }) async {
     return _request(
       path,
+      data: map,
       method: 'GET',
       queryParameters: queryParameters,
       options: options,
@@ -183,9 +187,7 @@ class ApiClient {
       return data;
     }
     if (data is Map) {
-      return data.map(
-        (key, value) => MapEntry(key.toString(), value),
-      );
+      return data.map((key, value) => MapEntry(key.toString(), value));
     }
     if (data is String) {
       try {
@@ -194,9 +196,7 @@ class ApiClient {
           return decoded;
         }
         if (decoded is Map) {
-          return decoded.map(
-            (key, value) => MapEntry(key.toString(), value),
-          );
+          return decoded.map((key, value) => MapEntry(key.toString(), value));
         }
         return <String, dynamic>{'data': decoded};
       } catch (error) {
@@ -240,7 +240,8 @@ class ApiClient {
         );
       case DioExceptionType.badResponse:
         return ApiException(
-          message: _extractMessage(data) ??
+          message:
+              _extractMessage(data) ??
               'Request failed${statusCode != null ? ' ($statusCode)' : ''}',
           type: ApiErrorType.badResponse,
           path: path,

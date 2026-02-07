@@ -8,9 +8,33 @@ class ValidationResultModel extends ValidationResult {
   });
 
   factory ValidationResultModel.fromJson(JsonMap json) {
+    final root = json;
+    final data = root['data'] is Map
+        ? (root['data'] as Map).map(
+            (key, value) => MapEntry(key.toString(), value),
+          )
+        : null;
+    final booking = root['booking'] is Map
+        ? (root['booking'] as Map).map(
+            (key, value) => MapEntry(key.toString(), value),
+          )
+        : null;
+    final normalized = data ?? booking ?? root;
+
+    final isValidValue = normalized['is_valid'] ??
+        normalized['isValid'] ??
+        normalized['valid'] ??
+        normalized['isQRValidated'] ??
+        normalized['is_qr_validated'] ??
+        root['success'];
     return ValidationResultModel(
-      isValid: json['is_valid'] as bool,
-      message: json['message'] as String,
+      isValid: isValidValue is bool ? isValidValue : false,
+      message: (normalized['message'] ??
+              root['message'] ??
+              normalized['detail'] ??
+              normalized['error'] ??
+              'Ticket validation completed.')
+          .toString(),
     );
   }
 

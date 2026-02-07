@@ -1,15 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_client_provider.dart';
+import '../../../../core/storage/local_storage_provider.dart';
 import '../../data/datasources/ticket_remote_data_source.dart';
 import '../../data/repositories/ticket_repository_impl.dart';
-import '../../domain/entities/ticket.dart';
+import '../../domain/entities/ticket_record.dart';
 import '../../domain/repositories/ticket_repository.dart';
-import '../../domain/usecases/get_ticket.dart';
+import '../../domain/usecases/get_ticket_history.dart';
 
 final ticketRemoteDataSourceProvider = Provider<TicketRemoteDataSource>((ref) {
   final client = ref.read(apiClientProvider);
-  return TicketRemoteDataSourceImpl(client);
+  final storage = ref.read(localStorageProvider);
+  return TicketRemoteDataSourceImpl(client, storage);
 });
 
 final ticketRepositoryProvider = Provider<TicketRepository>((ref) {
@@ -17,11 +19,15 @@ final ticketRepositoryProvider = Provider<TicketRepository>((ref) {
   return TicketRepositoryImpl(remote);
 });
 
-final getTicketProvider = Provider<GetTicket>((ref) {
+
+
+final getTicketHistoryProvider = Provider<GetTicketHistory>((ref) {
   final repo = ref.read(ticketRepositoryProvider);
-  return GetTicket(repo);
+  return GetTicketHistory(repo);
 });
 
-final ticketProvider = FutureProvider.family<Ticket, String>((ref, bookingId) {
-  return ref.read(getTicketProvider)(bookingId);
+
+
+final ticketHistoryRemoteProvider = FutureProvider<List<TicketRecord>>((ref) {
+  return ref.read(getTicketHistoryProvider)();
 });

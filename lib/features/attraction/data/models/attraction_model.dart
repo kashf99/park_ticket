@@ -13,14 +13,23 @@ class AttractionModel extends Attraction {
   });
 
   factory AttractionModel.fromJson(JsonMap json) {
+    final data = _extractData(json);
     return AttractionModel(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      description: json['description'] as String,
-      openingTime: json['opening_time'] as String,
-      closingTime: json['closing_time'] as String,
-      price: json['price_cents'] as int,
-      featuredImage: json['featured_image'] as String,
+      id: (data['_id'] ?? data['id'] ?? '').toString(),
+      name: (data['name'] ?? 'Attraction').toString(),
+      description: (data['description'] ?? '').toString(),
+      openingTime:
+          (data['opening_time'] ?? data['openingTime'] ?? '09:00 AM').toString(),
+      closingTime:
+          (data['closing_time'] ?? data['closingTime'] ?? '06:00 PM').toString(),
+      price: _parseInt(
+        data['ticketPrice'] ?? data['price_cents'] ?? data['price'] ?? 0,
+      ),
+      featuredImage: (data['imageUrl'] ??
+              data['featured_image'] ??
+              data['featuredImage'] ??
+              '')
+          .toString(),
     );
   }
 
@@ -34,5 +43,20 @@ class AttractionModel extends Attraction {
       'price_cents': price,
       'featured_image': featuredImage,
     };
+  }
+
+  static JsonMap _extractData(JsonMap json) {
+    final dynamic data = json['data'] ?? json['attraction'] ?? json['item'];
+    if (data is Map) {
+      return data.map((key, value) => MapEntry(key.toString(), value));
+    }
+    return json;
+  }
+
+  static int _parseInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.round();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
   }
 }

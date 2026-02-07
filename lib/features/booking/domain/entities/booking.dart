@@ -9,6 +9,12 @@ class Booking {
   final int totalCents;
   final String status;
   final String? qrToken;
+  final String? attractionName;
+  final int? totalAmount;
+  final int? taxAmount;
+  final int? finalAmount;
+  final String? paymentReference;
+  final String? qrCodeImage;
 
   const Booking({
     required this.id,
@@ -21,5 +27,11 @@ class Booking {
     required this.totalCents,
     required this.status,
     this.qrToken,
+    this.attractionName,
+    this.totalAmount,
+    this.taxAmount,
+    this.finalAmount,
+    this.paymentReference,
+    this.qrCodeImage,
   });
 }

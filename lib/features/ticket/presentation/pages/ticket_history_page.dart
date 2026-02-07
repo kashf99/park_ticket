@@ -5,6 +5,7 @@ import 'package:park_ticket/core/utils/spacing.dart';
 import 'package:park_ticket/core/widgets/outline_chip_button.dart';
 import 'package:park_ticket/core/widgets/primary_button.dart';
 import 'package:park_ticket/features/ticket/presentation/pages/ticket_confirmation_page.dart';
+import 'package:park_ticket/features/ticket/presentation/providers/ticket_provider.dart';
 import 'package:park_ticket/features/ticket/presentation/providers/ticket_session_provider.dart';
 
 class TicketHistoryPage extends ConsumerWidget {
@@ -12,7 +13,7 @@ class TicketHistoryPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final history = ref.watch(ticketHistoryProvider);
+    final historyAsync = ref.watch(ticketHistoryRemoteProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -45,30 +46,43 @@ class TicketHistoryPage extends ConsumerWidget {
                         style: Theme.of(context).textTheme.headlineMedium,
                       ),
                       vSpaceM,
-                      if (history.isEmpty)
-                        _EmptyTicketHistory(
-                          onExplore: () => Navigator.of(context)
-                              .popUntil((route) => route.isFirst),
-                        )
-                      else
-                        Column(
-                          children: [
-                            for (final snapshot in history) ...[
-                              _TicketHistoryCard(
-                                bookingId: snapshot.booking.id,
-                                visitDate: snapshot.booking.visitDate
+                      historyAsync.when(
+                        data: (records) {
+                          debugPrint(
+                            'Ticket history loaded: ${records.length} records',
+                          );
+                          if (records.isEmpty) {
+                            return _EmptyTicketHistory(
+                              onExplore: () => Navigator.of(context)
+                                  .popUntil((route) => route.isFirst),
+                            );
+                          }
+                          return ListView.separated(
+                            physics: const NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: records.length,
+                            separatorBuilder: (_, __) => vSpaceS,
+                            itemBuilder: (context, index) {
+                              final record = records[index];
+                              final snapshot = TicketSnapshot(
+                                booking: record.booking,
+                                ticket: record.ticket,
+                              );
+                              return _TicketHistoryCard(
+                                bookingId: record.booking.id,
+                                visitDate: record.booking.visitDate
                                     .toIso8601String()
                                     .split('T')
                                     .first,
-                                timeSlot: snapshot.booking.timeSlot,
-                                quantity: snapshot.booking.quantity,
-                                status: snapshot.booking.status,
+                                timeSlot: record.booking.timeSlot,
+                                quantity: record.booking.quantity,
+                                status: record.booking.status,
                                 onView: () {
                                   ref
                                       .read(
                                         lastTicketBookingIdProvider.notifier,
                                       )
-                                      .state = snapshot.booking.id;
+                                      .state = record.booking.id;
                                   ref
                                       .read(
                                         lastTicketSnapshotProvider.notifier,
@@ -81,11 +95,26 @@ class TicketHistoryPage extends ConsumerWidget {
                                     ),
                                   );
                                 },
-                              ),
-                              vSpaceS,
-                            ],
-                          ],
+                              );
+                            },
+                          );
+                        },
+                        loading: () => const Center(
+                          child: Padding(
+                            padding: EdgeInsets.only(top: 80),
+                            child: CircularProgressIndicator(),
+                          ),
                         ),
+                        error: (error, stackTrace) {
+                          debugPrint('Ticket history error: $error');
+                          return _TicketHistoryError(
+                            message:
+                                'Unable to load your tickets right now. Please try again.',
+                            onRetry: () =>
+                                ref.refresh(ticketHistoryRemoteProvider),
+                          );
+                        },
+                      ),
                       vSpaceM,
                     ],
                   ),
@@ -135,6 +164,52 @@ class _EmptyTicketHistory extends StatelessWidget {
           ),
           vSpaceM,
           PrimaryButton(label: 'Explore Attractions', onPressed: onExplore),
+        ],
+      ),
+    );
+  }
+}
+
+class _TicketHistoryError extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+
+  const _TicketHistoryError({
+    required this.message,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: AppColors.outline),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x14000000),
+            blurRadius: 24,
+            offset: Offset(0, 14),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'We hit a snag',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          vSpaceS,
+          Text(
+            message,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          vSpaceM,
+          PrimaryButton(label: 'Try Again', onPressed: onRetry),
         ],
       ),
     );

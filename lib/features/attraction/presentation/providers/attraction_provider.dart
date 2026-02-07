@@ -6,6 +6,7 @@ import '../../data/repositories/attraction_repository_impl.dart';
 import '../../domain/entities/attraction.dart';
 import '../../domain/repositories/attraction_repository.dart';
 import '../../domain/usecases/get_attraction.dart';
+import '../../domain/usecases/get_attractions.dart';
 
 final attractionRemoteDataSourceProvider = Provider<AttractionRemoteDataSource>((ref) {
   final client = ref.read(apiClientProvider);
@@ -22,6 +23,15 @@ final getAttractionProvider = Provider<GetAttraction>((ref) {
   return GetAttraction(repo);
 });
 
+final getAttractionsProvider = Provider<GetAttractions>((ref) {
+  final repo = ref.read(attractionRepositoryProvider);
+  return GetAttractions(repo);
+});
+
 final attractionProvider = FutureProvider.family<Attraction, String>((ref, id) {
   return ref.read(getAttractionProvider)(id);
+});
+
+final attractionsProvider = FutureProvider<List<Attraction>>((ref) {
+  return ref.read(getAttractionsProvider)();
 });

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_client_provider.dart';
+import '../../../../core/storage/local_storage_provider.dart';
 import '../../data/datasources/booking_remote_data_source.dart';
 import '../../data/repositories/booking_repository_impl.dart';
 import '../../domain/entities/booking.dart';
@@ -10,7 +11,8 @@ import '../../domain/usecases/get_booking.dart';
 
 final bookingRemoteDataSourceProvider = Provider<BookingRemoteDataSource>((ref) {
   final client = ref.read(apiClientProvider);
-  return BookingRemoteDataSourceImpl(client);
+  final storage = ref.read(localStorageProvider);
+  return BookingRemoteDataSourceImpl(client, storage);
 });
 
 final bookingRepositoryProvider = Provider<BookingRepository>((ref) {

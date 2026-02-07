@@ -7,8 +7,9 @@ import 'package:park_ticket/core/widgets/outline_chip_button.dart';
 import 'package:park_ticket/core/widgets/primary_button.dart';
 import 'package:park_ticket/features/attraction/domain/entities/attraction.dart';
 import 'package:park_ticket/features/booking/domain/entities/booking.dart';
+import 'package:park_ticket/core/widgets/app_shell.dart';
 import 'package:park_ticket/features/payment/presentation/providers/payment_flow_provider.dart';
-import 'package:park_ticket/features/ticket/presentation/pages/ticket_confirmation_page.dart';
+import 'package:park_ticket/features/ticket/presentation/providers/ticket_provider.dart';
 
 class PaymentPage extends ConsumerWidget {
   final Attraction attraction;
@@ -26,14 +27,21 @@ class PaymentPage extends ConsumerWidget {
     final flowController = ref.read(paymentFlowControllerProvider.notifier);
 
     Future<void> confirmPayment() async {
+      print('Confirming payment...');
+      print(booking.totalCents);
+      print(booking.attractionId);
+      print(booking.email);
+      print(booking.qrToken);
+      print(booking.visitDate);
       final ticket = await flowController.confirm(booking);
-      if (ticket == null) return;
       if (!context.mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute<void>(
-          builder: (_) => const TicketConfirmationPage(),
-        ),
-      );
+      if (ticket == null && flowController.state.errorMessage != null) {
+        return;
+      }
+      Navigator.of(context, rootNavigator: true)
+          .popUntil((route) => route.isFirst);
+      ref.read(appTabIndexProvider.notifier).state = 2;
+      ref.invalidate(ticketHistoryRemoteProvider);
     }
 
     return Scaffold(

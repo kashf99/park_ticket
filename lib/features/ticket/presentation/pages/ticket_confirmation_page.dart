@@ -4,11 +4,10 @@ import 'package:park_ticket/features/booking/domain/entities/booking.dart';
 import 'package:park_ticket/features/ticket/domain/entities/ticket.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:park_ticket/core/theme/app_colors.dart';
+import 'package:park_ticket/core/utils/formatters.dart';
 import 'package:park_ticket/core/utils/spacing.dart';
 import 'package:park_ticket/core/widgets/outline_chip_button.dart';
 import 'package:park_ticket/core/widgets/primary_button.dart';
-import 'package:park_ticket/features/booking/presentation/providers/booking_provider.dart';
-import 'package:park_ticket/features/ticket/presentation/providers/ticket_provider.dart';
 import 'package:park_ticket/features/ticket/presentation/providers/ticket_session_provider.dart';
 
 class TicketConfirmationPage extends ConsumerWidget {
@@ -16,73 +15,22 @@ class TicketConfirmationPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bookingId = ref.watch(lastTicketBookingIdProvider);
     final snapshot = ref.watch(lastTicketSnapshotProvider);
-    if (bookingId == null) {
-      if (snapshot != null) {
-        return _TicketConfirmationBody(
-          booking: snapshot.booking,
-          ticket: snapshot.ticket,
-        );
-      }
-      return _TicketStateScaffold(
-        title: 'No ticket yet',
-        message: 'Book a visit to generate your ticket.',
-        actionLabel: 'Back to Home',
-        onAction: () =>
-            Navigator.of(context).popUntil((route) => route.isFirst),
+    if (snapshot != null) {
+      return _TicketConfirmationBody(
+        booking: snapshot.booking,
+        ticket: snapshot.ticket,
       );
     }
-
-    final bookingAsync = ref.watch(bookingProvider(bookingId));
-    final ticketAsync = ref.watch(ticketProvider(bookingId));
-
-    if (bookingAsync.isLoading || ticketAsync.isLoading) {
-      return const Scaffold(
-        body: SafeArea(child: Center(child: CircularProgressIndicator())),
-      );
-    }
-
-    if (bookingAsync.hasError || ticketAsync.hasError) {
-      if (snapshot != null) {
-        return _TicketConfirmationBody(
-          booking: snapshot.booking,
-          ticket: snapshot.ticket,
-        );
-      }
-      return _TicketStateScaffold(
-        title: 'Unable to load ticket',
-        message: 'Please try again in a moment.',
-        actionLabel: 'Retry',
-        onAction: () {
-          ref.invalidate(bookingProvider(bookingId));
-          ref.invalidate(ticketProvider(bookingId));
-        },
-        secondaryLabel: 'Back to Home',
-        onSecondary: () =>
-            Navigator.of(context).popUntil((route) => route.isFirst),
-      );
-    }
-
-    final booking = bookingAsync.value;
-    final ticket = ticketAsync.value;
-    if (booking == null || ticket == null) {
-      if (snapshot != null) {
-        return _TicketConfirmationBody(
-          booking: snapshot.booking,
-          ticket: snapshot.ticket,
-        );
-      }
-      return _TicketStateScaffold(
-        title: 'Ticket unavailable',
-        message: 'We could not find your ticket details.',
-        actionLabel: 'Back to Home',
-        onAction: () =>
-            Navigator.of(context).popUntil((route) => route.isFirst),
-      );
-    }
-
-    return _TicketConfirmationBody(booking: booking, ticket: ticket);
+    return _TicketStateScaffold(
+      title: 'No ticket selected',
+      message: 'Pick a ticket from your history to view its details.',
+      actionLabel: 'Back to Tickets',
+      onAction: () => Navigator.of(context).pop(),
+      secondaryLabel: 'Back to Home',
+      onSecondary: () =>
+          Navigator.of(context).popUntil((route) => route.isFirst),
+    );
   }
 }
 
@@ -98,6 +46,36 @@ class _TicketConfirmationBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final visitDate = booking.visitDate.toIso8601String().split('T').first;
+    final attractionName = booking.attractionName?.trim() ?? '';
+    final paymentReference = booking.paymentReference?.trim() ?? '';
+    final hasQrImage = (booking.qrCodeImage ?? '').trim().isNotEmpty;
+
+    final details = <_DetailRow>[
+      _DetailRow(label: 'Booking ID', value: booking.id),
+      if (attractionName.isNotEmpty)
+        _DetailRow(label: 'Attraction', value: attractionName),
+      _DetailRow(label: 'Visit date', value: visitDate),
+      _DetailRow(label: 'Time', value: booking.timeSlot),
+      _DetailRow(label: 'Tickets', value: '${booking.quantity}'),
+      if (paymentReference.isNotEmpty)
+        _DetailRow(label: 'Payment Ref', value: paymentReference),
+      _DetailRow(label: 'Status', value: booking.status),
+      if ((booking.totalAmount ?? 0) > 0)
+        _DetailRow(
+          label: 'Subtotal',
+          value: formatPrice(booking.totalAmount ?? 0),
+        ),
+      if ((booking.taxAmount ?? 0) > 0)
+        _DetailRow(
+          label: 'Tax',
+          value: formatPrice(booking.taxAmount ?? 0),
+        ),
+      if ((booking.finalAmount ?? 0) > 0)
+        _DetailRow(
+          label: 'Total',
+          value: formatPrice(booking.finalAmount ?? 0),
+        ),
+    ];
 
     return Scaffold(
       body: SafeArea(
@@ -139,6 +117,16 @@ class _TicketConfirmationBody extends StatelessWidget {
                                   context,
                                 ).textTheme.headlineMedium,
                               ),
+                              if (attractionName.isNotEmpty) ...[
+                                vSpaceS,
+                                Text(
+                                  attractionName,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(color: AppColors.inkMuted),
+                                ),
+                              ],
                             ],
                           ),
                           OutlineChipButton(
@@ -191,24 +179,7 @@ class _TicketConfirmationBody extends StatelessWidget {
                             ),
                             vSpaceM,
                             _DetailsCard(
-                              rows: [
-                                _DetailRow(
-                                  label: 'Booking ID',
-                                  value: booking.id,
-                                ),
-                                _DetailRow(
-                                  label: 'Visit date',
-                                  value: visitDate,
-                                ),
-                                _DetailRow(
-                                  label: 'Time',
-                                  value: booking.timeSlot,
-                                ),
-                                _DetailRow(
-                                  label: 'Tickets',
-                                  value: '${booking.quantity}',
-                                ),
-                              ],
+                              rows: details,
                             ),
                             vSpaceM,
                             Center(
@@ -219,11 +190,29 @@ class _TicketConfirmationBody extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(24),
                                   border: Border.all(color: AppColors.outline),
                                 ),
-                                child: QrImageView(
-                                  data: ticket.qrToken,
-                                  size: 220,
-                                  backgroundColor: Colors.white,
-                                ),
+                                child: hasQrImage
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(16),
+                                        child: Image.network(
+                                          booking.qrCodeImage!,
+                                          height: 220,
+                                          width: 220,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                            return QrImageView(
+                                              data: ticket.qrToken,
+                                              size: 220,
+                                              backgroundColor: Colors.white,
+                                            );
+                                          },
+                                        ),
+                                      )
+                                    : QrImageView(
+                                        data: ticket.qrToken,
+                                        size: 220,
+                                        backgroundColor: Colors.white,
+                                      ),
                               ),
                             ),
                             vSpaceM,
