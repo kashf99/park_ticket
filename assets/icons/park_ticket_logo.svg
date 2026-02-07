@@ -1,16 +1,29 @@
-<svg width="820" height="220" viewBox="100 120 820 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Dotted park ring -->
-  <g transform="translate(120,160)" fill="#FFFFFF">
-    <circle cx="60" cy="0" r="8"/>
-    <circle cx="98" cy="14" r="8"/>
-    <circle cx="120" cy="50" r="8"/>
-    <circle cx="106" cy="88" r="8"/>
-    <circle cx="70" cy="110" r="8"/>
-    <circle cx="32" cy="96" r="8"/>
-    <circle cx="10" cy="60" r="8"/>
-    <circle cx="24" cy="22" r="8"/>
+<svg width="900" height="300" viewBox="0 0 900 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="globeClip">
+      <circle cx="150" cy="150" r="110" />
+    </clipPath>
+  </defs>
+
+  <!-- Globe base -->
+  <circle cx="150" cy="150" r="110" fill="#3B84DD" />
+  <g clip-path="url(#globeClip)">
+    <!-- Waves -->
+    <path d="M-10 120 Q 60 90 140 120 T 310 120" stroke="#8ED3FF" stroke-width="18" stroke-linecap="round" fill="none" />
+    <path d="M-10 150 Q 70 120 150 150 T 320 150" stroke="#78C4F5" stroke-width="16" stroke-linecap="round" fill="none" />
+    <path d="M-10 180 Q 60 150 140 180 T 310 180" stroke="#8ED3FF" stroke-width="18" stroke-linecap="round" fill="none" />
+
+    <!-- Land masses -->
+    <ellipse cx="120" cy="120" rx="55" ry="28" fill="#43C374" />
+    <ellipse cx="190" cy="170" rx="70" ry="38" fill="#32AC66" />
+    <ellipse cx="115" cy="200" rx="45" ry="22" fill="#43C374" />
+    <ellipse cx="210" cy="130" rx="30" ry="16" fill="#43C374" />
   </g>
 
+  <!-- Globe ring -->
+  <circle cx="150" cy="150" r="110" stroke="#6EAFEB" stroke-width="6" fill="none" />
+
   <!-- Wordmark -->
-  <text x="260" y="240" font-size="96" fill="#FFFFFF" font-family="Georgia, 'Times New Roman', serif" font-weight="600" textLength="520" lengthAdjust="spacingAndGlyphs">Park Ticket</text>
+  <text x="320" y="145" font-size="72" fill="#000000" font-family="Arial, sans-serif" font-weight="700" letter-spacing="2">PARK</text>
+  <text x="320" y="225" font-size="72" fill="#000000" font-family="Arial, sans-serif" font-weight="700" letter-spacing="2">TICKET</text>
 </svg>

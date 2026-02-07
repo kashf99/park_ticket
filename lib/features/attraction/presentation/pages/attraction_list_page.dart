@@ -155,22 +155,23 @@ class _AttractionListHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Image.asset(
                 'assets/icons/park_ticket_logo.png',
-                width: 90.w,
-                height: 28.h,
+                width: 150.w,
+                height: 50.h,
                 fit: BoxFit.contain,
               ),
               SizedBox(width: 12.w),
-              Expanded(
-                child: Text(
-                  'Park Ticket Explorer',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-                ),
-              ),
+              // Expanded(
+              //   child: Text(
+              //     'Park Ticket Explorer',
+              //     style: Theme.of(
+              //       context,
+              //     ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+              //   ),
+              // ),
               _PillButton(
                 label: 'English',
                 icon: Icons.keyboard_arrow_down,
@@ -178,7 +179,7 @@ class _AttractionListHeader extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 6.h),
           // Container(
           //   height: 180.h,
           //   decoration: BoxDecoration(

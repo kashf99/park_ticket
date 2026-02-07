@@ -105,8 +105,8 @@ class _LogoMark extends StatelessWidget {
     return Center(
       child: SvgPicture.asset(
         'assets/icons/park_ticket_logo.svg',
-        height: 120.h,
-        width: 120.h,
+        height: 80.h,
+        width: 80.h,
         fit: BoxFit.contain,
       ),
     );
@@ -297,7 +297,7 @@ class _HeroPainter extends CustomPainter {
             end: Alignment.bottomCenter,
             colors: const [
               Color.fromARGB(255, 255, 255, 255),
-              Color.fromARGB(255, 5, 64, 76),
+              Color.fromARGB(255, 1, 31, 37),
               Color.fromARGB(255, 250, 251, 251),
             ],
             transform: GradientRotation(cycle * 0.22),
