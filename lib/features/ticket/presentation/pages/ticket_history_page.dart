@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:park_ticket/core/theme/app_colors.dart';
+import 'package:park_ticket/core/utils/formatters.dart';
 import 'package:park_ticket/core/utils/spacing.dart';
 import 'package:park_ticket/core/widgets/outline_chip_button.dart';
 import 'package:park_ticket/core/widgets/primary_button.dart';
@@ -250,7 +251,7 @@ class _TicketHistoryCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Booking $bookingId',
+                'Booking ${formatBookingId(bookingId)}',
                 style: Theme.of(context)
                     .textTheme
                     .titleMedium

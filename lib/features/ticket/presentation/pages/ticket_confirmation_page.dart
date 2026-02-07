@@ -38,10 +38,7 @@ class _TicketConfirmationBody extends StatelessWidget {
   final Booking booking;
   final Ticket ticket;
 
-  const _TicketConfirmationBody({
-    required this.booking,
-    required this.ticket,
-  });
+  const _TicketConfirmationBody({required this.booking, required this.ticket});
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +48,7 @@ class _TicketConfirmationBody extends StatelessWidget {
     final hasQrImage = (booking.qrCodeImage ?? '').trim().isNotEmpty;
 
     final details = <_DetailRow>[
-      _DetailRow(label: 'Booking ID', value: booking.id),
+      _DetailRow(label: 'Booking ID', value: formatBookingId(booking.id)),
       if (attractionName.isNotEmpty)
         _DetailRow(label: 'Attraction', value: attractionName),
       _DetailRow(label: 'Visit date', value: visitDate),
@@ -66,10 +63,7 @@ class _TicketConfirmationBody extends StatelessWidget {
           value: formatPrice(booking.totalAmount ?? 0),
         ),
       if ((booking.taxAmount ?? 0) > 0)
-        _DetailRow(
-          label: 'Tax',
-          value: formatPrice(booking.taxAmount ?? 0),
-        ),
+        _DetailRow(label: 'Tax', value: formatPrice(booking.taxAmount ?? 0)),
       if ((booking.finalAmount ?? 0) > 0)
         _DetailRow(
           label: 'Total',
@@ -121,9 +115,7 @@ class _TicketConfirmationBody extends StatelessWidget {
                                 vSpaceS,
                                 Text(
                                   attractionName,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium
+                                  style: Theme.of(context).textTheme.titleMedium
                                       ?.copyWith(color: AppColors.inkMuted),
                                 ),
                               ],
@@ -178,9 +170,7 @@ class _TicketConfirmationBody extends StatelessWidget {
                               ],
                             ),
                             vSpaceM,
-                            _DetailsCard(
-                              rows: details,
-                            ),
+                            _DetailsCard(rows: details),
                             vSpaceM,
                             Center(
                               child: Container(
@@ -200,12 +190,12 @@ class _TicketConfirmationBody extends StatelessWidget {
                                           fit: BoxFit.cover,
                                           errorBuilder:
                                               (context, error, stackTrace) {
-                                            return QrImageView(
-                                              data: ticket.qrToken,
-                                              size: 220,
-                                              backgroundColor: Colors.white,
-                                            );
-                                          },
+                                                return QrImageView(
+                                                  data: ticket.qrToken,
+                                                  size: 220,
+                                                  backgroundColor: Colors.white,
+                                                );
+                                              },
                                         ),
                                       )
                                     : QrImageView(
@@ -236,30 +226,31 @@ class _TicketConfirmationBody extends StatelessWidget {
                               ],
                             ),
                             vSpaceM,
-                            SizedBox(
-                              width: double.infinity,
-                              child: OutlinedButton.icon(
-                                onPressed: () {},
-                                icon: const Icon(Icons.download),
-                                label: const Text('Save Screenshot (Tip)'),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: AppColors.ink,
-                                  backgroundColor: const Color(0xFFF0F3F8),
-                                  side: const BorderSide(
-                                    color: AppColors.outline,
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 14,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(26),
-                                  ),
-                                  textStyle: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
+
+                            // SizedBox(
+                            //   width: double.infinity,
+                            //   child: OutlinedButton.icon(
+                            //     onPressed: () {},
+                            //     icon: const Icon(Icons.download),
+                            //     label: const Text('Save Screenshot (Tip)'),
+                            //     style: OutlinedButton.styleFrom(
+                            //       foregroundColor: AppColors.ink,
+                            //       backgroundColor: const Color(0xFFF0F3F8),
+                            //       side: const BorderSide(
+                            //         color: AppColors.outline,
+                            //       ),
+                            //       padding: const EdgeInsets.symmetric(
+                            //         vertical: 14,
+                            //       ),
+                            //       shape: RoundedRectangleBorder(
+                            //         borderRadius: BorderRadius.circular(26),
+                            //       ),
+                            //       textStyle: const TextStyle(
+                            //         fontWeight: FontWeight.w600,
+                            //       ),
+                            //     ),
+                            //   ),
+                            // ),
                           ],
                         ),
                       ),

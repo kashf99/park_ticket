@@ -156,14 +156,11 @@ class _AttractionListHeader extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
-                width: 36.w,
-                height: 36.w,
-                decoration: const BoxDecoration(
-                  color: AppColors.brandDark,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.public, color: Colors.white, size: 18),
+              Image.asset(
+                'assets/icons/park_ticket_logo.png',
+                width: 90.w,
+                height: 28.h,
+                fit: BoxFit.contain,
               ),
               SizedBox(width: 12.w),
               Expanded(

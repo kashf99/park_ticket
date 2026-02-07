@@ -75,17 +75,35 @@ class GateValidationController
       state = state.copyWith(result: validation);
     } on ApiException catch (error) {
       debugPrint('GateValidation error: $error');
-      final message = error.type == ApiErrorType.unknown
-          ? 'Check your connection and try again.'
-          : error.toString();
+      final backendMessage = _extractBackendMessage(error);
+      final message = backendMessage ??
+          (error.type == ApiErrorType.unknown
+              ? 'Check your connection and try again.'
+              : 'Unable to validate this ticket right now.');
       state = state.copyWith(errorMessage: message);
     } catch (error) {
       debugPrint('GateValidation error: $error');
-      state = state.copyWith(errorMessage: error.toString());
+      state = state.copyWith(
+        errorMessage: 'Unable to validate this ticket right now.',
+      );
     } finally {
       state = state.copyWith(isLoading: false);
     }
   }
+}
+
+String? _extractBackendMessage(ApiException error) {
+  final data = error.data;
+  if (data is Map) {
+    final message = data['message'] ?? data['error'] ?? data['detail'];
+    if (message is String && message.trim().isNotEmpty) {
+      return message;
+    }
+  }
+  if (data is String && data.trim().isNotEmpty) {
+    return data;
+  }
+  return null;
 }
 
 final gateValidationControllerProvider =

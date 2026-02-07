@@ -9,8 +9,6 @@ import 'package:park_ticket/core/widgets/app_shell.dart';
 class SplashPage extends StatelessWidget {
   const SplashPage({super.key});
 
-  static const Color _orangeTop = Color.fromARGB(255, 129, 210, 248);
-  static const Color _orangeBottom = Color.fromARGB(255, 8, 84, 114);
   static const Color _cardText = Color(0xFFF8F4F2);
 
   @override
@@ -21,7 +19,10 @@ class SplashPage extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [_orangeTop, _orangeBottom],
+            colors: [
+              Color.fromARGB(255, 1, 88, 107),
+              Color.fromARGB(255, 17, 18, 18),
+            ],
           ),
         ),
         child: SafeArea(
@@ -37,6 +38,7 @@ class SplashPage extends StatelessWidget {
                       Positioned.fill(
                         child: Image.asset(
                           'assets/images/splash_background.jpg',
+
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -61,7 +63,7 @@ class SplashPage extends StatelessWidget {
                         top: 26.h,
                         left: 0,
                         right: 0,
-                        child: const _LogoMark(),
+                        child: const Center(child: _LogoMark()),
                       ),
                       Positioned(
                         left: 20.w,
@@ -100,47 +102,13 @@ class _LogoMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 44.w,
-          height: 44.w,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.white.withOpacity(0.8),
-              width: 1.5,
-            ),
-          ),
-          child: ClipOval(
-            child: SvgPicture.asset(
-              'assets/icons/travel_app_icon.svg',
-              fit: BoxFit.cover,
-            ),
-          ),
-        ),
-        SizedBox(height: 8.h),
-        Text(
-          'Park Ticket',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 3,
-          ),
-        ),
-        SizedBox(height: 4.h),
-        Text(
-          'TRAVEL & TOURISM',
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.8),
-            fontSize: 10.sp,
-            letterSpacing: 2,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
+    return Center(
+      child: SvgPicture.asset(
+        'assets/icons/park_ticket_logo.svg',
+        height: 120.h,
+        width: 120.h,
+        fit: BoxFit.contain,
+      ),
     );
   }
 }
@@ -328,9 +296,9 @@ class _HeroPainter extends CustomPainter {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: const [
-              Color.fromARGB(255, 212, 240, 246),
-              Color.fromARGB(255, 55, 127, 142),
-              Color.fromARGB(255, 121, 204, 224),
+              Color.fromARGB(255, 255, 255, 255),
+              Color.fromARGB(255, 5, 64, 76),
+              Color.fromARGB(255, 250, 251, 251),
             ],
             transform: GradientRotation(cycle * 0.22),
           ).createShader(

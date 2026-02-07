@@ -1,0 +1,16 @@
+<svg width="820" height="220" viewBox="100 120 820 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Dotted park ring -->
+  <g transform="translate(120,160)" fill="#FFFFFF">
+    <circle cx="60" cy="0" r="8"/>
+    <circle cx="98" cy="14" r="8"/>
+    <circle cx="120" cy="50" r="8"/>
+    <circle cx="106" cy="88" r="8"/>
+    <circle cx="70" cy="110" r="8"/>
+    <circle cx="32" cy="96" r="8"/>
+    <circle cx="10" cy="60" r="8"/>
+    <circle cx="24" cy="22" r="8"/>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="260" y="240" font-size="96" fill="#FFFFFF" font-family="Georgia, 'Times New Roman', serif" font-weight="600" textLength="520" lengthAdjust="spacingAndGlyphs">Park Ticket</text>
+</svg>

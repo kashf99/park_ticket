@@ -97,7 +97,18 @@ class TicketRemoteDataSourceImpl implements TicketRemoteDataSource {
 
   Future<JsonMap> _fetchBookingsByVisitor(String visitorId) async {
     debugPrint('Fetching tickets: /api/bookings/visitor/ (POST body)');
-    return client.post('/api/bookings/visitor/', {'visitorId': visitorId});
+    try {
+      return await client.post('/api/bookings/visitor/', {'visitorId': visitorId});
+    } on ApiException catch (error) {
+      if (error.type == ApiErrorType.badResponse &&
+          error.statusCode == 404 &&
+          (error.message.toLowerCase().contains('no bookings') ||
+              error.message.toLowerCase().contains('not found'))) {
+        debugPrint('No bookings found for visitorId: $visitorId');
+        return const {'data': []};
+      }
+      rethrow;
+    }
   }
 
   Ticket _ticketFromMap(Map<String, dynamic> data, Booking booking) {
