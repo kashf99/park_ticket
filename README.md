@@ -8,10 +8,18 @@ git clone <repo-url>
 cd park_ticket
 flutter pub get
 ```
-3) Provide backend URL at runtime : choose your API endpoint and pass it as a dart define:
+3) Provide backend URL at runtime (attach the flag to the Flutter command):
+   - Localhost matrix:
+     - iOS/macOS/Chrome: `http://localhost:4000`
+     - Android emulator: `http://10.0.2.2:4000` (emulator loopback to host)
+     - Physical Android device: your machine IP, e.g. `http://192.168.x.x:4000`
+   - Examples:
 ```bash
-flutter run --dart-define=API_BASE_URL=https://api.example.com
+flutter run --dart-define=API_BASE_URL=http://localhost:4000          # iOS sim/macOS/web
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:4000          # Android emulator
+flutter run --dart-define=API_BASE_URL=https://api.example.com       # hosted API
 ```
+   - When Flutter shows “Please choose one” after listing devices, pick the target that matches the URL you passed (e.g., choose the Android emulator only if you used `10.0.2.2`).
    - iOS: ensure a simulator or device is available. From this folder you can also run `open ios/Runner.xcworkspace` for Xcode debugging.
    - Android: start an emulator or plug in a device with developer mode enabled.
 4) Build app bundles (optional):
@@ -21,9 +29,10 @@ flutter build apk   --dart-define=API_BASE_URL=https://api.example.com
 ```
 5) Troubleshooting quick hits:
    - “API_BASE_URL is not set” → rerun with the `--dart-define` flag above.
-   - Network errors on emulator → for localhost backends use `http://10.0.2.2:<port>` on Android emulator, or `http://localhost:<port>` on iOS simulator.
+   - Connection error on Android emulator → rerun with `--dart-define=API_BASE_URL=http://10.0.2.2:4000` and ensure your backend is running/accessible.
+   - Network errors on iOS/macOS → keep `http://localhost:<port>`; verify the backend process is up.
 
-An APP for browsing attractions, booking tickets, and validating entries.
+An App for browsing attractions, booking tickets, and validating entries.
 
 ## Architecture Overview
 - **State**: Riverpod (providers + notifiers). Async providers power API fetches; local form/search state uses `StateProvider`/`StateNotifier`.
@@ -76,14 +85,17 @@ An APP for browsing attractions, booking tickets, and validating entries.
 ## Local Storage
 - `LocalStorage` stores user email/phone and admin JWT/name/email/role. Helper methods for save/clear/get.
 
-## How to Run
+## How to Run (quick)
 ```bash
 flutter pub get
-flutter run
+# iOS/macOS/Chrome
+flutter run --dart-define=API_BASE_URL=http://localhost:4000
+# Android emulator
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:4000
 ```
-Ensure a simulator/device is available and provide the backend base URL via Dart define, e.g. `flutter run --dart-define=API_BASE_URL=https://your-api`.
+- When Flutter lists devices and asks “Please choose one”, pick the target matching the URL you passed (e.g., choose the Android emulator only if you used `10.0.2.2`).
 - For iOS, open `ios/Runner.xcworkspace` if manual debugging in Xcode; run `pod install` after dependency changes.
-- For Android, ensure a device/emulator with camera permission granted for QR scanning.
+- For Android, ensure an emulator/device with camera permission granted; use `10.0.2.2` for localhost backends.
 
 ## Key Files
 - `lib/core/network/api_client.dart` — Dio wrapper & error mapping.
@@ -93,11 +105,3 @@ Ensure a simulator/device is available and provide the backend base URL via Dart
 - `lib/features/admin/presentation/pages/gate_validation_page.dart` — admin hub (QR validation + attraction creation).
 - `lib/features/admin/presentation/pages/admin_login_page.dart` — admin auth.
 - `lib/features/ticket/presentation/pages/ticket_confirmation_page.dart` — ticket details/QR.
-
-## Notes / Next Improvements
-- Add widget/unit tests for data parsing and error handling.
-- Externalize demo/fallback data to assets to avoid hardcoded image URLs.
-- Consider surfacing 4xx API errors directly in UI instead of falling back.
-- Add CI checks (format, analyze, tests).
-- Introduce localization for strings (attractions, admin, splash).
-- Extract API base URL to env/config per flavor (dev/stage/prod) via `--dart-define` or flavor config files.
