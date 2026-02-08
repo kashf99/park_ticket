@@ -1,10 +1,19 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:park_ticket/core/network/api_client.dart';
+import 'package:park_ticket/core/network/api_client_provider.dart';
+import 'package:park_ticket/core/storage/local_storage_provider.dart';
 import 'package:park_ticket/core/theme/app_colors.dart';
 import 'package:park_ticket/core/utils/spacing.dart';
+import 'package:park_ticket/core/widgets/app_shell.dart';
 import 'package:park_ticket/core/widgets/outline_chip_button.dart';
 import 'package:park_ticket/core/widgets/primary_button.dart';
 import 'package:park_ticket/features/admin/presentation/providers/gate_validation_provider.dart';
+import 'package:park_ticket/features/attraction/presentation/providers/attraction_provider.dart';
 
 class GateValidationPage extends ConsumerWidget {
   const GateValidationPage({super.key});
@@ -24,103 +33,122 @@ class GateValidationPage extends ConsumerWidget {
       }
     }
 
-    Future<void> validateTicket() async {
-      await notifier.validate(controller.text);
+
+
+    void goHome() {
+      // Return to main bottom-nav screen (tab 0) and unwind the stack.
+      ref.read(appTabIndexProvider.notifier).state = 0;
+      final navigator = Navigator.of(context);
+      if (navigator.canPop()) {
+        navigator.popUntil((route) => route.isFirst);
+      } else {
+        navigator.pushReplacement(
+          MaterialPageRoute<void>(builder: (_) => const AppShell()),
+        );
+      }
     }
 
-    return Scaffold(
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final horizontalPadding = constraints.maxWidth < 500 ? 16.0 : 28.0;
-            final contentWidth = constraints.maxWidth > 720
-                ? 720.0
-                : constraints.maxWidth;
+    return WillPopScope(
+      onWillPop: () async {
+        goHome();
+        return false;
+      },
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Scaffold(
+          body: SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final horizontalPadding = constraints.maxWidth < 500
+                    ? 16.0
+                    : 28.0;
+                final contentWidth = constraints.maxWidth > 720
+                    ? 720.0
+                    : constraints.maxWidth;
 
-            return SingleChildScrollView(
-              padding: EdgeInsets.symmetric(
-                horizontal: horizontalPadding,
-                vertical: 20,
-              ),
-              child: Center(
-                child: SizedBox(
-                  width: contentWidth,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                return SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: horizontalPadding,
+                    vertical: 20,
+                  ),
+                  child: Center(
+                    child: SizedBox(
+                      width: contentWidth,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          Row(
                             children: [
-                              Text(
-                                'Admin',
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(
-                                      color: AppColors.inkMuted,
-                                      fontWeight: FontWeight.w600,
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Admin',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
+                                            color: AppColors.inkMuted,
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                     ),
+                                    Text(
+                                      'Gate Validation',
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.headlineMedium,
+                                    ),
+                                  ],
+                                ),
                               ),
-                              Text(
-                                'Gate Validation',
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.headlineMedium,
+
+                              hSpaceS,
+                              OutlineChipButton(
+                                label: 'Back',
+                                onPressed: goHome,
                               ),
                             ],
                           ),
-                          OutlineChipButton(
-                            label: 'Back',
-                            onPressed: () => Navigator.of(context).pop(),
+                          vSpaceM,
+                          _ModeToggle(
+                            mode: mode,
+                            onChanged: (nextMode) {
+                              ref
+                                      .read(gateValidationModeProvider.notifier)
+                                      .state =
+                                  nextMode;
+                              notifier.clearMessages();
+                            },
                           ),
+                          vSpaceM,
+                          if (mode == GateValidationMode.createAttraction)
+                            const _NewAttractionForm(),
+                          if (mode == GateValidationMode.scan)
+                            _ScanCard(onActivate: openScanner),
+                          if (state.errorMessage != null) ...[
+                            vSpaceM,
+                            _ValidationMessage(
+                              message: state.errorMessage!,
+                              isSuccess: false,
+                            ),
+                          ],
+                          if (state.result != null) ...[
+                            vSpaceM,
+                            _ValidationMessage(
+                              message: state.result!.message,
+                              isSuccess: state.result!.isValid,
+                            ),
+                          ],
                         ],
                       ),
-                      vSpaceM,
-                      _ModeToggle(
-                        mode: mode,
-                        onChanged: (nextMode) {
-                          ref.read(gateValidationModeProvider.notifier).state =
-                              nextMode;
-                          notifier.clearMessages();
-                        },
-                      ),
-                      vSpaceM,
-                      if (mode == GateValidationMode.manual)
-                        _ManualEntryCard(
-                          controller: controller,
-                          isLoading: state.isLoading,
-                          onSubmit: validateTicket,
-                          onScanTap: openScanner,
-                          onClearMessages: () {
-                            if (state.errorMessage != null ||
-                                state.result != null) {
-                              notifier.clearMessages();
-                            }
-                          },
-                        ),
-                      if (mode == GateValidationMode.scan)
-                        _ScanCard(onActivate: openScanner),
-                      if (state.errorMessage != null) ...[
-                        vSpaceM,
-                        _ValidationMessage(
-                          message: state.errorMessage!,
-                          isSuccess: false,
-                        ),
-                      ],
-                      if (state.result != null) ...[
-                        vSpaceM,
-                        _ValidationMessage(
-                          message: state.result!.message,
-                          isSuccess: state.result!.isValid,
-                        ),
-                      ],
-                    ],
+                    ),
                   ),
-                ),
-              ),
-            );
-          },
+                );
+              },
+            ),
+          ),
         ),
       ),
     );
@@ -163,9 +191,9 @@ class _ModeToggle extends StatelessWidget {
           Expanded(
             child: _ModeChip(
               icon: Icons.text_fields,
-              label: 'Manual Entry',
-              selected: mode == GateValidationMode.manual,
-              onTap: () => onChanged(GateValidationMode.manual),
+              label: 'New Attraction',
+              selected: mode == GateValidationMode.createAttraction,
+              onTap: () => onChanged(GateValidationMode.createAttraction),
             ),
           ),
         ],
@@ -261,60 +289,382 @@ class _SoftCard extends StatelessWidget {
   }
 }
 
-class _ManualEntryCard extends StatelessWidget {
-  final TextEditingController controller;
-  final bool isLoading;
-  final VoidCallback onSubmit;
-  final VoidCallback onScanTap;
-  final VoidCallback onClearMessages;
+class _NewAttractionForm extends ConsumerStatefulWidget {
+  const _NewAttractionForm();
 
-  const _ManualEntryCard({
-    required this.controller,
-    required this.isLoading,
-    required this.onSubmit,
-    required this.onScanTap,
-    required this.onClearMessages,
+  @override
+  ConsumerState<_NewAttractionForm> createState() => _NewAttractionFormState();
+}
+
+class _NewAttractionFormState extends ConsumerState<_NewAttractionForm> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _openingController = TextEditingController(text: '09:00 AM');
+  final _closingController = TextEditingController(text: '06:00 PM');
+  final _locationController = TextEditingController(text: 'Main Zone');
+  final _priceController = TextEditingController(text: '25.50');
+  final _capacityController = TextEditingController(text: '40');
+  final List<String> _timeOptions = List.generate(24, (index) {
+    final hour = index % 12 == 0 ? 12 : index % 12;
+    final suffix = index < 12 ? 'AM' : 'PM';
+    return '${hour.toString().padLeft(2, '0')}:00 $suffix';
   });
+  String? _imagePath;
+  bool _isActive = true;
+  bool _isSubmitting = false;
+  final ImagePicker _picker = ImagePicker();
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _descriptionController.dispose();
+    _openingController.dispose();
+    _closingController.dispose();
+    _priceController.dispose();
+    _locationController.dispose();
+    _capacityController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    final result = await _picker.pickImage(source: ImageSource.gallery);
+    if (result != null) {
+      setState(() => _imagePath = result.path);
+    }
+  }
+
+  Future<void> _submit() async {
+    if (_isSubmitting) return;
+    final form = _formKey.currentState;
+    if (form == null || !form.validate()) return;
+
+    final apiClient = ref.read(apiClientProvider);
+    final storage = ref.read(localStorageProvider);
+    final token = await storage.getAdminToken();
+    if (token == null || token.isEmpty) {
+      _showSnack('Admin session missing. Please log in again.', isError: true);
+      return;
+    }
+
+    if (_imagePath == null || _imagePath!.isEmpty) {
+      _showSnack('Please pick an image before submitting.', isError: true);
+      return;
+    }
+
+    final formDataMap = {
+      'name': _nameController.text.trim(),
+      'description': _descriptionController.text.trim(),
+      'location': _locationController.text.trim(),
+      'ticketPrice': double.tryParse(_priceController.text.trim()) ?? 0.0,
+      'capacityPerSlot': int.tryParse(_capacityController.text.trim()) ?? 0,
+      'timings': {
+        'opening': _openingController.text.trim(),
+        'closing': _closingController.text.trim(),
+      },
+      'isActive': _isActive,
+    };
+
+    final formData = FormData.fromMap(formDataMap);
+
+    if (_imagePath != null && _imagePath!.isNotEmpty) {
+      final file = File(_imagePath!);
+      if (file.existsSync()) {
+        formData.files.add(
+          MapEntry(
+            'image',
+            await MultipartFile.fromFile(
+              _imagePath!,
+              filename: file.uri.pathSegments.last,
+            ),
+          ),
+        );
+      } else {
+        _showSnack('Image file not found at path: $_imagePath', isError: true);
+      }
+    }
+
+    setState(() => _isSubmitting = true);
+    try {
+      debugPrint('Create attraction payload: $formData');
+      final response = await apiClient.post(
+        '/api/attractions',
+        formData,
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+      debugPrint('Create attraction response: $response');
+      ref.invalidate(attractionsProvider);
+      _showSnack('Attraction created');
+      form.reset();
+      _nameController.clear();
+      _descriptionController.clear();
+      _locationController.clear();
+      _openingController.text = '09:00 AM';
+      _closingController.text = '06:00 PM';
+      _priceController.text = '25.50';
+      _capacityController.text = '40';
+      _imagePath = null;
+      setState(() {
+        _isActive = true;
+      });
+      if (!mounted) return;
+      await _showCreateSuccessDialog();
+    } on ApiException catch (error) {
+      debugPrint('Create attraction API error: $error');
+      _showSnack(
+        _extractMessage(error) ?? 'Failed to create attraction.',
+        isError: true,
+      );
+    } catch (_) {
+      _showSnack('Failed to create attraction.', isError: true);
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  Future<void> _showCreateSuccessDialog() async {
+    final goHome = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Attraction created'),
+          content: const Text(
+            'Do you want to create another attraction or go home?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Create More'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Go Home'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (!mounted || goHome != true) return;
+
+    ref.read(appTabIndexProvider.notifier).state = 0;
+    final navigator = Navigator.of(context);
+    if (navigator.canPop()) {
+      navigator.popUntil((route) => route.isFirst);
+    } else {
+      navigator.pushReplacement(
+        MaterialPageRoute<void>(builder: (_) => const AppShell()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return _SoftCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Enter ID', style: Theme.of(context).textTheme.headlineMedium),
-          vSpaceS,
-          Text(
-            'Type the booking number from the ticket.',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          vSpaceM,
-          TextField(
-            controller: controller,
-            textInputAction: TextInputAction.done,
-            onSubmitted: (_) => onSubmit(),
-            onChanged: (_) => onClearMessages(),
-            decoration: InputDecoration(
-              hintText: 'e.g., DF-AB12-CD34',
-              prefixIcon: const Icon(Icons.text_fields),
-              suffixIcon: IconButton(
-                icon: const Icon(Icons.qr_code_scanner),
-                onPressed: onScanTap,
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Create Attraction',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            vSpaceS,
+            Text(
+              'Add a new attraction with details and ticket price.',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            vSpaceM,
+            TextFormField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                labelText: 'Name',
+                border: OutlineInputBorder(),
+              ),
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Enter a name' : null,
+            ),
+            vSpaceM,
+            TextFormField(
+              controller: _descriptionController,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                alignLabelWithHint: true,
+                labelText: 'Description',
+                border: OutlineInputBorder(),
+              ),
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Enter a description' : null,
+            ),
+            vSpaceM,
+            TextFormField(
+              controller: _locationController,
+              decoration: const InputDecoration(
+                labelText: 'Location',
+                border: OutlineInputBorder(),
+              ),
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Enter a location' : null,
+            ),
+            vSpaceM,
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _openingController.text,
+                    items: _timeOptions
+                        .map(
+                          (time) => DropdownMenuItem<String>(
+                            value: time,
+                            child: Text(time),
+                          ),
+                        )
+                        .toList(growable: false),
+                    decoration: const InputDecoration(
+                      labelText: 'Opening Time',
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() => _openingController.text = value);
+                      }
+                    },
+                    validator: (v) =>
+                        v == null || v.trim().isEmpty ? 'Required' : null,
+                  ),
+                ),
+                hSpaceM,
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _closingController.text,
+                    items: _timeOptions
+                        .map(
+                          (time) => DropdownMenuItem<String>(
+                            value: time,
+                            child: Text(time),
+                          ),
+                        )
+                        .toList(growable: false),
+                    decoration: const InputDecoration(
+                      labelText: 'Closing Time',
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() => _closingController.text = value);
+                      }
+                    },
+                    validator: (v) =>
+                        v == null || v.trim().isEmpty ? 'Required' : null,
+                  ),
+                ),
+              ],
+            ),
+            vSpaceM,
+            TextFormField(
+              controller: _priceController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Ticket Price',
+                border: OutlineInputBorder(),
+              ),
+              validator: (v) => int.tryParse(v?.trim() ?? '') == null
+                  ? 'Enter a number'
+                  : null,
+            ),
+            vSpaceM,
+            TextFormField(
+              controller: _capacityController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Capacity Per Slot',
+                border: OutlineInputBorder(),
+              ),
+              validator: (v) => int.tryParse(v?.trim() ?? '') == null
+                  ? 'Enter a capacity number'
+                  : null,
+            ),
+            vSpaceM,
+            InputDecorator(
+              decoration: const InputDecoration(
+                labelText: 'Image',
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.insert_drive_file,
+                    color: (_imagePath == null || _imagePath!.isEmpty)
+                        ? AppColors.inkMuted
+                        : AppColors.brand,
+                  ),
+                  hSpaceS,
+                  Expanded(
+                    child: Text(
+                      _imagePath == null || _imagePath!.isEmpty
+                          ? 'Choose an Image'
+                          : 'File Uploaded',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.inkMuted,
+                      ),
+                    ),
+                  ),
+                  hSpaceS,
+                  OutlineChipButton(label: 'Pick Image', onPressed: _pickImage),
+                ],
               ),
             ),
-          ),
-          vSpaceM,
-          SizedBox(
-            width: double.infinity,
-            child: PrimaryButton(
-              label: isLoading ? 'Checking...' : 'Check Ticket',
-              trailingIcon: Icons.arrow_forward,
-              onPressed: isLoading ? null : onSubmit,
+            vSpaceM,
+            Row(
+              children: [
+                Switch(
+                  value: _isActive,
+                  onChanged: (value) => setState(() => _isActive = value),
+                  activeColor: AppColors.brand,
+                ),
+                const SizedBox(width: 8),
+                const Text('Active'),
+              ],
             ),
-          ),
-        ],
+
+            SizedBox(
+              width: double.infinity,
+              child: PrimaryButton(
+                label: _isSubmitting ? 'Creating...' : 'Create Attraction',
+                onPressed: _isSubmitting ? null : _submit,
+              ),
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  void _showSnack(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+      ),
+    );
+  }
+
+  String? _extractMessage(ApiException error) {
+    final data = error.data;
+    if (data is Map) {
+      final msg = data['message'] ?? data['error'] ?? data['detail'];
+      if (msg is String && msg.trim().isNotEmpty) return msg;
+    }
+    if (data is String && data.trim().isNotEmpty) return data;
+    return null;
   }
 }
 
@@ -467,7 +817,7 @@ class _ValidationMessage extends StatelessWidget {
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

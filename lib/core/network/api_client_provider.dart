@@ -4,6 +4,8 @@ import 'api_client.dart';
 
 final apiClientProvider = Provider<ApiClient>(
   (ref) => ApiClient(
-    baseUrl: 'https://0fnx75nt-4000.inc1.devtunnels.ms',
+    baseUrl:"http://10.0.2.2:4000"
+    // "https://hcbrb0pp-4000.inc1.devtunnels.ms"
+    //'https://reasonable-mollusk-est-25df9ad3.koyeb.app',
   ),
 );

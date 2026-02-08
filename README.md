@@ -1,16 +1,80 @@
-# park_ticket
+# Park Ticket
 
-A new Flutter project.
+Flutter app for browsing attractions, booking tickets, and validating entries.
 
-## Getting Started
+## Architecture Overview
+- **State**: Riverpod (providers + notifiers). Async providers power API fetches; local form/search state uses `StateProvider`/`StateNotifier`.
+- **Networking**: Dio wrapped by `ApiClient` (`lib/core/network/api_client.dart`) with typed error mapping and JSON normalization. Base URL is set in `api_client_provider.dart`.
+- **Storage**: SharedPreferences via `LocalStorage` for user contact and admin token.
+- **Navigation**: Plain Flutter `Navigator`. App shell with bottom tabs for Attractions, Admin, Tickets.
+- **Styling**: AppTheme light palette; ScreenUtil for responsive sizing; SectionCard/InfoTile shared widgets for consistent surfaces.
 
-This project is a starting point for a Flutter application.
+## Feature Modules
+- **Attractions** (`lib/features/attraction`)
+  - **Presentation**: `AttractionListPage` lists attractions with search, favorites (local state), and pull-to-refresh. `AttractionPage` shows detail; `AttractionContent` renders hero, description, info tiles, and booking CTA.
+  - **Data**: `AttractionRemoteDataSource` handles GET `/api/attractions` and `/api/attractions/:id`, defensive parsing, and graceful fallbacks. Models live in `data/models` and mirror domain entities.
+  - **Domain**: Entities (`Attraction`) and use cases (`GetAttractions`, etc.) sit between presentation and data.
+- **Flows**:
+  - List → Detail → Book: user browses list, taps a card, views details, proceeds to booking.
+  - Pull-to-refresh: swipe down on list to refetch provider.
 
-A few resources to get you started if this is your first Flutter project:
+- **Booking/Tickets** (`lib/features/booking`, `lib/features/ticket`)
+  - Booking flow builds payloads and posts to `/api/bookings`; saves visitor contact locally.
+  - Ticket confirmation (`ticket_confirmation_page.dart`) shows booking details and QR; amount row only.
+  - Ticket history lives under Tickets tab; selecting a ticket drives confirmation view via provider snapshot.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- **Admin** (`lib/features/admin`)
+  - Admin login posts to `/api/users/login`, saves JWT + user info in `LocalStorage`.
+  - Gate Validation page toggles between QR scan (mobile_scanner) and “New Attraction” creation form.
+  - Creation form posts multipart `/api/attractions` with image picked via `image_picker`, capacity, price, location, active flag, and logs payload/response.
+  - Validation flow posts ticket QR payload to `/api/bookings/validate-qr`, shows success/error with fallbacks.
+- **Admin flow summary**:
+  1) Login → token stored.
+  2) Validate tab: scan or create attraction (multipart with photo).
+  3) Back returns to main tabs.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- **Splash** (`lib/features/splash`)
+  - Animated hero background and circular “Get Started” button with rotating gradient.
+
+## Error & Fallback Behavior
+- `ApiClient` maps Dio errors to `ApiException` types: cancelled, timeout, badResponse, network, invalidResponse, unknown.
+- Attractions list: falls back only on network/unknown; otherwise surfaces errors.
+- Attraction detail: falls back on network/unknown; other API errors propagate.
+
+## Refresh & Search
+- Attractions list uses `RefreshIndicator` + `ref.refresh(attractionsProvider.future)`.
+- Search state held in a `StateProvider`; favorites stored in a `StateNotifier` (local only).
+
+## Image & Permissions
+- Image picking for admin attraction creation via `image_picker` (gallery). Permissions set in Android manifest (READ_MEDIA_IMAGES/READ_EXTERNAL_STORAGE) and iOS Info.plist (`NSPhotoLibraryUsageDescription`).
+- Camera permission already included for QR scanning (`mobile_scanner`).
+- On iOS, ensure photo library permission string is customized if you rebrand; on Android 33+ `READ_MEDIA_IMAGES` is required, and `READ_EXTERNAL_STORAGE` is present for <=32.
+
+## Local Storage
+- `LocalStorage` stores user email/phone and admin JWT/name/email/role. Helper methods for save/clear/get.
+
+## How to Run
+```bash
+flutter pub get
+flutter run
+```
+Ensure a simulator/device is available and the backend base URL in `api_client_provider.dart` is valid.
+- For iOS, open `ios/Runner.xcworkspace` if manual debugging in Xcode; run `pod install` after dependency changes.
+- For Android, ensure a device/emulator with camera permission granted for QR scanning.
+
+## Key Files
+- `lib/core/network/api_client.dart` — Dio wrapper & error mapping.
+- `lib/core/network/api_client_provider.dart` — base URL provider.
+- `lib/features/attraction/presentation/pages/attraction_list_page.dart` — list/search/refresh UI.
+- `lib/features/attraction/presentation/pages/attraction_page.dart` — detail page.
+- `lib/features/admin/presentation/pages/gate_validation_page.dart` — admin hub (QR validation + attraction creation).
+- `lib/features/admin/presentation/pages/admin_login_page.dart` — admin auth.
+- `lib/features/ticket/presentation/pages/ticket_confirmation_page.dart` — ticket details/QR.
+
+## Notes / Next Improvements
+- Add widget/unit tests for data parsing and error handling.
+- Externalize demo/fallback data to assets to avoid hardcoded image URLs.
+- Consider surfacing 4xx API errors directly in UI instead of falling back.
+- Add CI checks (format, analyze, tests).
+- Introduce localization for strings (attractions, admin, splash).
+- Extract API base URL to env/config per flavor (dev/stage/prod).

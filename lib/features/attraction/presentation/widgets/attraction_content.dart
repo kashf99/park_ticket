@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:park_ticket/core/theme/app_colors.dart';
 import 'package:park_ticket/core/utils/formatters.dart';
 import 'package:park_ticket/core/utils/spacing.dart';
 import 'package:park_ticket/core/widgets/info_tile.dart';
@@ -16,10 +17,7 @@ import 'package:park_ticket/features/ticket/presentation/providers/ticket_sessio
 class AttractionContent extends ConsumerWidget {
   final Attraction attraction;
 
-  const AttractionContent({
-    super.key,
-    required this.attraction,
-  });
+  const AttractionContent({super.key, required this.attraction});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -46,13 +44,12 @@ class AttractionContent extends ConsumerWidget {
                 children: [
                   HeaderRow(
                     name: attraction.name,
-                    showTicketButton: hasTicket,
+                 
                     onTicketTap: hasTicket
                         ? () {
                             Navigator.of(context).push(
                               MaterialPageRoute<void>(
-                                builder: (_) =>
-                                    const TicketConfirmationPage(),
+                                builder: (_) => const TicketConfirmationPage(),
                               ),
                             );
                           }
@@ -65,26 +62,72 @@ class AttractionContent extends ConsumerWidget {
                     description: attraction.description,
                     imageUrl: attraction.featuredImage,
                   ),
-                  vSpaceM,
-                  InfoTile(
-                    icon: Icons.schedule,
-                    label: 'Opening time',
-                    value: formatTime(attraction.openingTime),
+ vSpaceM,
+                  SectionCard(
+                    height: 150.h,
+                    padding: EdgeInsets.all(18.r),
+                    child: ListView(
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              height: 28,
+                              width: 28,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFE9F1F6),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.verified,
+                                color: AppColors.brand,
+                                size: 18,
+                              ),
+                            ),
+                            hSpaceS,
+                            Text(
+                              'Premium experience • Mobile ticket',
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(color: Colors.black),
+                            ),
+                          ],
+                        ),
+                        vSpaceS,
+
+                        Text(
+                          attraction.description,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: Colors.black),
+                        ),
+                      ],
+                    ),
                   ),
                   vSpaceM,
-                  InfoTile(
-                    icon: Icons.schedule,
-                    label: 'Closing time',
-                    value: formatTime(attraction.closingTime),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      InfoTile(
+                        icon: Icons.sunny,
+                        label: 'Opening time',
+                        value: formatTime(attraction.openingTime),
+                      ),
+                      vSpaceM,
+                      InfoTile(
+                        icon: Icons.dark_mode,
+                        label: 'Closing time',
+                        value: formatTime(attraction.closingTime),
+                      ),
+                      vSpaceM,
+                      InfoTile(
+                        icon: Icons.confirmation_number,
+                        label: 'Ticket price',
+                        value: formatPrice(attraction.price),
+                      ),
+                    ],
                   ),
-                  vSpaceM,
-                  InfoTile(
-                    icon: Icons.confirmation_number,
-                    label: 'Ticket price',
-                    value: formatPrice(attraction.price),
-                  ),
+
                   vSpaceM,
                   SectionCard(
+                    height: 110.h,
                     child: Row(
                       children: [
                         Expanded(

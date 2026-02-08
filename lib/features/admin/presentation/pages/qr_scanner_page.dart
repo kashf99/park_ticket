@@ -29,9 +29,8 @@ class QrScannerPage extends ConsumerWidget {
       showDialog<void>(
         context: context,
         barrierDismissible: false,
-        builder: (_) => const Center(
-          child: CircularProgressIndicator(color: Colors.white),
-        ),
+        builder: (_) =>
+            const Center(child: CircularProgressIndicator(color: Colors.white)),
       );
 
       try {
@@ -44,7 +43,8 @@ class QrScannerPage extends ConsumerWidget {
       Navigator.of(context).pop();
 
       final isValid = validationState.result?.isValid ?? false;
-      final message = validationState.result?.message ??
+      final message =
+          validationState.result?.message ??
           validationState.errorMessage ??
           'Failed to validate the ticket.';
 
@@ -149,7 +149,7 @@ class QrScannerPage extends ConsumerWidget {
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.6),
+                  color: Colors.black.withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Text(

@@ -21,8 +21,9 @@ class TicketHistoryPage extends ConsumerWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final horizontalPadding = constraints.maxWidth < 500 ? 16.0 : 28.0;
-            final contentWidth =
-                constraints.maxWidth > 720 ? 720.0 : constraints.maxWidth;
+            final contentWidth = constraints.maxWidth > 720
+                ? 720.0
+                : constraints.maxWidth;
 
             return SingleChildScrollView(
               padding: EdgeInsets.symmetric(
@@ -38,9 +39,9 @@ class TicketHistoryPage extends ConsumerWidget {
                       Text(
                         'Tickets',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppColors.inkMuted,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          color: AppColors.inkMuted,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       Text(
                         'Purchased Tickets',
@@ -54,8 +55,9 @@ class TicketHistoryPage extends ConsumerWidget {
                           );
                           if (records.isEmpty) {
                             return _EmptyTicketHistory(
-                              onExplore: () => Navigator.of(context)
-                                  .popUntil((route) => route.isFirst),
+                              onExplore: () => Navigator.of(
+                                context,
+                              ).popUntil((route) => route.isFirst),
                             );
                           }
                           return ListView.separated(
@@ -83,12 +85,15 @@ class TicketHistoryPage extends ConsumerWidget {
                                       .read(
                                         lastTicketBookingIdProvider.notifier,
                                       )
-                                      .state = record.booking.id;
+                                      .state = record
+                                      .booking
+                                      .id;
                                   ref
-                                      .read(
-                                        lastTicketSnapshotProvider.notifier,
-                                      )
-                                      .state = snapshot;
+                                          .read(
+                                            lastTicketSnapshotProvider.notifier,
+                                          )
+                                          .state =
+                                      snapshot;
                                   Navigator.of(context).push(
                                     MaterialPageRoute<void>(
                                       builder: (_) =>
@@ -154,10 +159,7 @@ class _EmptyTicketHistory extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'No tickets yet',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
+          Text('No tickets yet', style: Theme.of(context).textTheme.titleLarge),
           vSpaceS,
           Text(
             'Book a visit and your ticket history will appear here.',
@@ -175,10 +177,7 @@ class _TicketHistoryError extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
 
-  const _TicketHistoryError({
-    required this.message,
-    required this.onRetry,
-  });
+  const _TicketHistoryError({required this.message, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -200,15 +199,9 @@ class _TicketHistoryError extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'We hit a snag',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
+          Text('We hit a snag', style: Theme.of(context).textTheme.titleLarge),
           vSpaceS,
-          Text(
-            message,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+          Text(message, style: Theme.of(context).textTheme.bodyMedium),
           vSpaceM,
           PrimaryButton(label: 'Try Again', onPressed: onRetry),
         ],
@@ -252,10 +245,9 @@ class _TicketHistoryCard extends StatelessWidget {
             children: [
               Text(
                 'Booking ${formatBookingId(bookingId)}',
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w700),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
               ),
               _StatusChip(status: status),
             ],
@@ -291,10 +283,9 @@ class _InfoRow extends StatelessWidget {
         Text(label, style: Theme.of(context).textTheme.bodyMedium),
         Text(
           value,
-          style: Theme.of(context)
-              .textTheme
-              .bodyMedium
-              ?.copyWith(fontWeight: FontWeight.w600),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
       ],
     );
@@ -324,15 +315,15 @@ class _StatusChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: _color.withOpacity(0.12),
+        color: _color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         status.isEmpty ? 'Unknown' : status,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: _color,
-              fontWeight: FontWeight.w600,
-            ),
+          color: _color,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

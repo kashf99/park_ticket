@@ -18,10 +18,8 @@ class AttractionModel extends Attraction {
       id: (data['_id'] ?? data['id'] ?? '').toString(),
       name: (data['name'] ?? 'Attraction').toString(),
       description: (data['description'] ?? '').toString(),
-      openingTime:
-          (data['opening_time'] ?? data['openingTime'] ?? '09:00 AM').toString(),
-      closingTime:
-          (data['closing_time'] ?? data['closingTime'] ?? '06:00 PM').toString(),
+      openingTime: _pickTime(data, 'opening_time', 'openingTime', 'opening'),
+      closingTime: _pickTime(data, 'closing_time', 'closingTime', 'closing'),
       price: _parseInt(
         data['ticketPrice'] ?? data['price_cents'] ?? data['price'] ?? 0,
       ),
@@ -51,6 +49,23 @@ class AttractionModel extends Attraction {
       return data.map((key, value) => MapEntry(key.toString(), value));
     }
     return json;
+  }
+
+  static String _pickTime(
+    Map data,
+    String snakeKey,
+    String camelKey,
+    String timingsKey,
+  ) {
+    final dynamic timings = data['timings'];
+    final dynamic fromTimings =
+        timings is Map ? timings[timingsKey] ?? timings[timingsKey.toLowerCase()] : null;
+    final value = data[snakeKey] ?? data[camelKey] ?? fromTimings ?? '';
+    final text = value?.toString().trim() ?? '';
+    if (text.isEmpty) {
+      return timingsKey == 'opening' ? '09:00 AM' : '06:00 PM';
+    }
+    return text;
   }
 
   static int _parseInt(dynamic value) {

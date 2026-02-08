@@ -20,12 +20,14 @@ dependencies:
   shared_preferences: ^2.2.3
   mobile_scanner: ^5.2.3
   qr_flutter: ^4.1.0
+  image_picker: ^1.0.8
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
   flutter_lints: ^5.0.0
+  mocktail: ^1.0.3
 
 flutter:
 

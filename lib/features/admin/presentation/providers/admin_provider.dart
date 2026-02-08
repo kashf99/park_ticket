@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_client_provider.dart';
@@ -7,6 +8,28 @@ import '../../domain/entities/validation_result.dart';
 import '../../domain/repositories/validation_repository.dart';
 import '../../domain/usecases/validate_ticket.dart';
 
+final adminLoginObscureProvider = StateProvider.autoDispose<bool>(
+  (ref) => true,
+);
+final adminLoginLoadingProvider = StateProvider.autoDispose<bool>(
+  (ref) => false,
+);
+final adminLoginFormKeyProvider = Provider.autoDispose<GlobalKey<FormState>>(
+  (ref) => GlobalKey<FormState>(),
+);
+final adminLoginUsernameControllerProvider =
+    Provider.autoDispose<TextEditingController>((ref) {
+      final controller = TextEditingController();
+      ref.onDispose(controller.dispose);
+      return controller;
+    });
+final adminLoginPasswordControllerProvider =
+    Provider.autoDispose<TextEditingController>((ref) {
+      final controller = TextEditingController();
+      ref.onDispose(controller.dispose);
+      return controller;
+    });
+ 
 final validationRemoteDataSourceProvider = Provider<ValidationRemoteDataSource>((ref) {
   final client = ref.read(apiClientProvider);
   return ValidationRemoteDataSourceImpl(client);

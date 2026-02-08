@@ -45,6 +45,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Camera access is required to scan QR codes for ticket validation.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Photo library access is needed to pick an attraction image.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 </dict>

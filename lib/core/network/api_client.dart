@@ -66,15 +66,14 @@ class ApiClient {
   final Dio _dio;
 
   Future<JsonMap> get(
-    String path,
-    Map<String, String> map, {
+    String path, {
     Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,
   }) async {
     return _request(
       path,
-      data: map,
+      // No request body for GET; some servers reject bodies with 406/400.
       method: 'GET',
       queryParameters: queryParameters,
       options: options,
@@ -84,7 +83,7 @@ class ApiClient {
 
   Future<JsonMap> post(
     String path,
-    JsonMap body, {
+    dynamic body, {
     Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,

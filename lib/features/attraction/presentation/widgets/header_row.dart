@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:park_ticket/core/theme/app_colors.dart';
 import 'package:park_ticket/core/utils/spacing.dart';
+import 'package:park_ticket/core/widgets/outline_chip_button.dart';
 
 class HeaderRow extends StatelessWidget {
   final VoidCallback? onTicketTap;
@@ -54,8 +55,14 @@ class HeaderRow extends StatelessWidget {
             ),
           ],
         ),
-        // if (showTicketButton)
-        //   OutlineChipButton(label: 'My Ticket', onPressed: onTicketTap),
+      
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: OutlineChipButton(
+              label: 'Back',
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
       ],
     );
   }

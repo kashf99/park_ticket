@@ -24,28 +24,23 @@ class InfoTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(18.r),
         border: Border.all(color: AppColors.outline),
       ),
-      child: Row(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
             height: 40.r,
             width: 40.r,
             decoration: const BoxDecoration(
-              color: Color(0xFFE9F1F6),
+              color: Color.fromARGB(255, 246, 246, 247),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: AppColors.brand, size: 24),
           ),
-          hSpaceM,
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label, style: Theme.of(context).textTheme.bodyMedium),
-                vSpaceS,
-                Text(value, style: Theme.of(context).textTheme.titleLarge),
-              ],
-            ),
-          ),
+          vSpaceS,
+          Text(label, style: Theme.of(context).textTheme.bodyMedium),
+          vSpaceS,
+          Text(value, style: Theme.of(context).textTheme.titleLarge),
         ],
       ),
     );

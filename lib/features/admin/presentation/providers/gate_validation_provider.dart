@@ -41,7 +41,7 @@ class GateValidationState {
   }
 }
 
-enum GateValidationMode { scan, manual }
+enum GateValidationMode { scan, createAttraction }
 
 class GateValidationController
     extends AutoDisposeNotifier<GateValidationState> {

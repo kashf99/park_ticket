@@ -30,11 +30,17 @@ class ValidationRemoteDataSourceImpl implements ValidationRemoteDataSource {
 
     final queryLike = _parseQueryLike(trimmed);
     if (queryLike.isNotEmpty) {
+      final qr =
+          queryLike['qrToken'] ??
+          queryLike['hash'] ??
+          queryLike['token'] ??
+          trimmed;
       return {
         'bookingId': queryLike['bookingId'] ?? queryLike['booking_id'] ?? '',
         'visitorEmail':
             queryLike['visitorEmail'] ?? queryLike['visitor_email'] ?? '',
-        'hash': queryLike['hash'] ?? queryLike['qrToken'] ?? trimmed,
+        'hash': qr,
+        'qrToken': qr,
       };
     }
 
@@ -42,19 +48,24 @@ class ValidationRemoteDataSourceImpl implements ValidationRemoteDataSource {
       try {
         final decoded = jsonDecode(trimmed);
         if (decoded is Map) {
+          final qr =
+              decoded['qrToken'] ??
+              decoded['qr_token'] ??
+              decoded['hash'] ??
+              trimmed;
           return {
-            'bookingId': decoded['bookingId'] ??
+            'bookingId':
+                decoded['bookingId'] ??
                 decoded['booking_id'] ??
                 decoded['id'] ??
                 '',
-            'visitorEmail': decoded['visitorEmail'] ??
+            'visitorEmail':
+                decoded['visitorEmail'] ??
                 decoded['visitor_email'] ??
                 decoded['email'] ??
                 '',
-            'hash': decoded['hash'] ??
-                decoded['qrToken'] ??
-                decoded['qr_token'] ??
-                trimmed,
+            'hash': qr,
+            'qrToken': qr,
           };
         }
       } catch (_) {}
@@ -63,25 +74,32 @@ class ValidationRemoteDataSourceImpl implements ValidationRemoteDataSource {
     if (trimmed.contains('|')) {
       final parts = trimmed.split('|');
       if (parts.length >= 3) {
+        final qr = parts.sublist(2).join('|');
         return {
           'bookingId': parts[0],
           'visitorEmail': parts[1],
-          'hash': parts.sublist(2).join('|'),
+          'hash': qr,
+          'qrToken': qr,
         };
       }
       if (parts.length == 2) {
+        final qr = parts[1];
         return {
           'bookingId': parts[0],
           'visitorEmail': '',
-          'hash': parts[1],
+          'hash': qr,
+          'qrToken': qr,
         };
       }
     }
 
+    // Fallback: treat the input as both bookingId and qr token so validation
+    // endpoint receives a usable value regardless of what the user typed.
     return {
       'bookingId': trimmed,
       'visitorEmail': '',
       'hash': trimmed,
+      'qrToken': trimmed,
     };
   }
 

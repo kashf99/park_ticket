@@ -1,30 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:park_ticket/features/admin/presentation/providers/admin_provider.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/network/api_client.dart';
+import '../../../../core/network/api_client_provider.dart';
+import '../../../../core/storage/local_storage_provider.dart';
 import '../../../../core/utils/spacing.dart';
 import '../../../../core/widgets/outline_chip_button.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/section_card.dart';
 import 'gate_validation_page.dart';
 
-final adminLoginObscureProvider = StateProvider.autoDispose<bool>((ref) => true);
-final adminLoginLoadingProvider = StateProvider.autoDispose<bool>((ref) => false);
-final adminLoginFormKeyProvider = Provider.autoDispose<GlobalKey<FormState>>(
-  (ref) => GlobalKey<FormState>(),
-);
-final adminLoginUsernameControllerProvider =
-    Provider.autoDispose<TextEditingController>((ref) {
-      final controller = TextEditingController();
-      ref.onDispose(controller.dispose);
-      return controller;
-    });
-final adminLoginPasswordControllerProvider =
-    Provider.autoDispose<TextEditingController>((ref) {
-      final controller = TextEditingController();
-      ref.onDispose(controller.dispose);
-      return controller;
-    });
 
 class AdminLoginPage extends ConsumerWidget {
   const AdminLoginPage({super.key});
@@ -63,16 +50,9 @@ class AdminLoginPage extends ConsumerWidget {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                            
                               Text(
-                                'Admin',
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(
-                                      color: AppColors.inkMuted,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                              ),
-                              Text(
-                                'Gate Admin Login',
+                                'Admin Login',
                                 style: Theme.of(
                                   context,
                                 ).textTheme.headlineMedium,
@@ -87,6 +67,7 @@ class AdminLoginPage extends ConsumerWidget {
                       ),
                       vSpaceM,
                       SectionCard(
+                        height: 350.h,
                         child: Form(
                           key: formKey,
                           child: Column(
@@ -190,16 +171,75 @@ Future<void> _submit(
     return;
   }
 
+  final usernameController = ref.read(adminLoginUsernameControllerProvider);
+  final passwordController = ref.read(adminLoginPasswordControllerProvider);
   ref.read(adminLoginLoadingProvider.notifier).state = true;
   try {
+    final apiClient = ref.read(apiClientProvider);
+    final storage = ref.read(localStorageProvider);
+    final email = usernameController.text.trim();
+    final password = passwordController.text;
+
+    final response = await apiClient.post('/api/users/login', {
+      'email': email,
+      'password': password,
+    });
+
+    final token = response['token']?.toString();
+    final user = response['user'];
+    if (token == null || token.isEmpty || user is! Map) {
+      throw const ApiException(
+        message: 'Invalid login response',
+        type: ApiErrorType.invalidResponse,
+        path: '/api/users/login',
+      );
+    }
+
+    await storage.saveAdminSession(
+      token: token,
+      name: user['name']?.toString(),
+      email: user['email']?.toString(),
+      role: user['role']?.toString(),
+    );
+
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Login successful')));
     await Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(builder: (_) => const GateValidationPage()),
     );
+  } on ApiException catch (error) {
+    _showLoginError(context, error);
   } catch (error) {
     debugPrint('Admin login navigation error: $error');
+    _showLoginError(context, error);
   } finally {
     if (context.mounted) {
       ref.read(adminLoginLoadingProvider.notifier).state = false;
     }
   }
+}
+
+void _showLoginError(BuildContext context, Object error) {
+  final message = switch (error) {
+    ApiException apiErr =>
+      _extractMessage(apiErr) ??
+          (apiErr.type == ApiErrorType.network
+              ? 'Network error. Check your connection and try again.'
+              : 'Login failed. Please try again.'),
+    _ => 'Login failed. Please try again.',
+  };
+
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+}
+
+String? _extractMessage(ApiException error) {
+  final data = error.data;
+  if (data is Map) {
+    final msg = data['message'] ?? data['error'] ?? data['detail'];
+    if (msg is String && msg.trim().isNotEmpty) return msg;
+  }
+  if (data is String && data.trim().isNotEmpty) return data;
+  return null;
 }

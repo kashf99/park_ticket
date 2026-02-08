@@ -16,14 +16,19 @@ class AttractionRemoteDataSourceImpl implements AttractionRemoteDataSource {
   @override
   Future<AttractionModel> fetchAttraction(String id) async {
     try {
-      final json = await client.get('/api/attractions/$id', {});
+      final json = await client.get('/api/attractions/$id');
       final data = _extractAttraction(json);
       if (data.isEmpty) {
         return _fallbackAttraction(id);
       }
       return AttractionModel.fromJson(data);
     } on ApiException catch (error) {
-      if (error.type == ApiErrorType.unknown) {
+      debugPrint('Attraction detail API error: $error');
+      // Only fallback for connection/unknown issues to avoid masking API errors.
+      final shouldFallback =
+          error.type == ApiErrorType.unknown ||
+          error.type == ApiErrorType.network;
+      if (shouldFallback) {
         return _fallbackAttraction(id);
       }
       rethrow;
@@ -33,20 +38,25 @@ class AttractionRemoteDataSourceImpl implements AttractionRemoteDataSource {
   @override
   Future<List<AttractionModel>> fetchAttractions() async {
     try {
-      final json = await client.get('/api/attractions', {});
+      final json = await client.get('/api/attractions');
+      debugPrint('Attractions raw response: $json');
       debugPrint('Attractions response keys: ${json.keys.toList()}');
       final rawList = _extractAttractionList(json);
       debugPrint('Attractions list size: ${rawList.length}');
+      for (var i = 0; i < rawList.length; i++) {
+        debugPrint('Attraction[$i]: ${rawList[i]}');
+      }
       if (rawList.isEmpty) {
-        return _fallbackAttractions();
+        // No data returned from API; surface empty state instead of demo list.
+        return const [];
       }
       return rawList.map((item) => AttractionModel.fromJson(item)).toList();
     } on ApiException catch (error) {
       debugPrint('Attractions API error: $error');
-      if (error.type == ApiErrorType.unknown ||
-          error.type == ApiErrorType.network ||
-          error.type == ApiErrorType.invalidResponse ||
-          (error.type == ApiErrorType.badResponse && error.statusCode == 404)) {
+      final shouldFallback =
+          error.type == ApiErrorType.unknown ||
+          error.type == ApiErrorType.network;
+      if (shouldFallback) {
         return _fallbackAttractions();
       }
       rethrow;
@@ -71,10 +81,16 @@ class AttractionRemoteDataSourceImpl implements AttractionRemoteDataSource {
     final dynamic data =
         json['data'] ?? json['results'] ?? json['items'] ?? json['attractions'];
     if (data is List) {
-      return data.cast<Map<String, dynamic>>();
+      return data
+          .whereType<Map>()
+          .map((item) => item.map((k, v) => MapEntry(k.toString(), v)))
+          .toList(growable: false);
     }
     if (data is Map && data['data'] is List) {
-      return (data['data'] as List).cast<Map<String, dynamic>>();
+      return (data['data'] as List)
+          .whereType<Map>()
+          .map((item) => item.map((k, v) => MapEntry(k.toString(), v)))
+          .toList(growable: false);
     }
     return const [];
   }
@@ -84,7 +100,7 @@ class AttractionRemoteDataSourceImpl implements AttractionRemoteDataSource {
     if (data is Map) {
       return data.map((key, value) => MapEntry(key.toString(), value));
     }
-    return json;
+    return <String, dynamic>{};
   }
 
   List<AttractionModel> _fallbackAttractions() {

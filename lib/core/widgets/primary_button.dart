@@ -19,8 +19,8 @@ class PrimaryButton extends StatelessWidget {
     return FilledButton(
       onPressed: onPressed,
       style: FilledButton.styleFrom(
-        backgroundColor: AppColors.accent,
-        foregroundColor: AppColors.ink,
+        backgroundColor: AppColors.brand,
+        foregroundColor: AppColors.outline,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(28),

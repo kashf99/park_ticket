@@ -57,17 +57,10 @@ class _TicketConfirmationBody extends StatelessWidget {
       if (paymentReference.isNotEmpty)
         _DetailRow(label: 'Payment Ref', value: paymentReference),
       _DetailRow(label: 'Status', value: booking.status),
-      if ((booking.totalAmount ?? 0) > 0)
+      if ((booking.totalAmount ?? booking.finalAmount ?? 0) > 0)
         _DetailRow(
-          label: 'Subtotal',
-          value: formatPrice(booking.totalAmount ?? 0),
-        ),
-      if ((booking.taxAmount ?? 0) > 0)
-        _DetailRow(label: 'Tax', value: formatPrice(booking.taxAmount ?? 0)),
-      if ((booking.finalAmount ?? 0) > 0)
-        _DetailRow(
-          label: 'Total',
-          value: formatPrice(booking.finalAmount ?? 0),
+          label: 'Amount',
+          value: formatPrice(booking.totalAmount ?? booking.finalAmount ?? 0),
         ),
     ];
 

@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../theme/app_colors.dart';
 
 class SectionCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
-
+final double? height;
   const SectionCard({
     super.key,
     required this.child,
+    this.height,
     this.padding = const EdgeInsets.all(18),
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: height?? 180.h,
       padding: padding,
       decoration: BoxDecoration(
         gradient: LinearGradient(

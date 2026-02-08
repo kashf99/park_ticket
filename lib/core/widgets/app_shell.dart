@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:park_ticket/core/theme/app_colors.dart';
 import 'package:park_ticket/features/admin/presentation/pages/admin_login_page.dart';
-import 'package:park_ticket/features/attraction/presentation/pages/attraction_list_page.dart';
+import 'package:park_ticket/features/attraction/presentation/pages/attractions_page.dart';
 import 'package:park_ticket/features/ticket/presentation/pages/ticket_history_page.dart';
 
 final appTabIndexProvider = StateProvider<int>((ref) => 0);
@@ -18,7 +18,7 @@ class AppShell extends ConsumerWidget {
       body: IndexedStack(
         index: currentIndex,
         children: const [
-          AttractionListPage(),
+          AttractionsPage(),
           AdminLoginPage(),
           TicketHistoryPage(),
         ],

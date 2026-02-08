@@ -28,7 +28,7 @@ class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
 
   @override
   Future<BookingModel> getBooking(String id) async {
-    final json = await client.get('/api/bookings/$id',{});
+    final json = await client.get('/api/bookings/$id');
     return BookingModel.fromJson(json);
   }
 }

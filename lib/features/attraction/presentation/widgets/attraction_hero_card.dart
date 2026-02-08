@@ -20,6 +20,7 @@ class AttractionHeroCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 230.h,
+      width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
         boxShadow: const [
@@ -31,70 +32,7 @@ class AttractionHeroCard extends StatelessWidget {
         ],
       ),
       clipBehavior: Clip.antiAlias,
-      child: Stack(
-        children: [
-          Positioned.fill(child: _HeroBackground(imageUrl: imageUrl)),
-          Positioned.fill(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Color.fromARGB(153, 222, 243, 252),
-                    Color.fromARGB(204, 97, 222, 241),
-                  ],
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            left: 18.w,
-            right: 18.w,
-            bottom: 18.h,
-            child: SectionCard(
-              padding: EdgeInsets.all(18.r),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        height: 28,
-                        width: 28,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFE9F1F6),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.verified,
-                          color: AppColors.brand,
-                          size: 18,
-                        ),
-                      ),
-                      hSpaceS,
-                      Text(
-                        'Premium experience • Mobile ticket',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                    ],
-                  ),
-                  vSpaceS,
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                  vSpaceS,
-                  Text(
-                    description,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+      child: _HeroBackground(imageUrl: imageUrl),
     );
   }
 }
