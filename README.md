@@ -1,6 +1,29 @@
 # Park Ticket
 
-Flutter app for browsing attractions, booking tickets, and validating entries.
+## Run Guide 
+1) Install tooling: Flutter SDK (stable), Xcode (for iOS), Android Studio + Android SDK/emulator (for Android). Add Flutter to PATH and accept Xcode licenses (`sudo xcodebuild -license`) if on macOS.
+2) Clone and fetch deps:
+```bash
+git clone <repo-url>
+cd park_ticket
+flutter pub get
+```
+3) Provide backend URL at runtime : choose your API endpoint and pass it as a dart define:
+```bash
+flutter run --dart-define=API_BASE_URL=https://api.example.com
+```
+   - iOS: ensure a simulator or device is available. From this folder you can also run `open ios/Runner.xcworkspace` for Xcode debugging.
+   - Android: start an emulator or plug in a device with developer mode enabled.
+4) Build app bundles (optional):
+```bash
+flutter build ipa   --dart-define=API_BASE_URL=https://api.example.com   # requires codemagic/Xcode signing setup
+flutter build apk   --dart-define=API_BASE_URL=https://api.example.com
+```
+5) Troubleshooting quick hits:
+   - “API_BASE_URL is not set” → rerun with the `--dart-define` flag above.
+   - Network errors on emulator → for localhost backends use `http://10.0.2.2:<port>` on Android emulator, or `http://localhost:<port>` on iOS simulator.
+
+An APP for browsing attractions, booking tickets, and validating entries.
 
 ## Architecture Overview
 - **State**: Riverpod (providers + notifiers). Async providers power API fetches; local form/search state uses `StateProvider`/`StateNotifier`.
@@ -58,13 +81,13 @@ Flutter app for browsing attractions, booking tickets, and validating entries.
 flutter pub get
 flutter run
 ```
-Ensure a simulator/device is available and the backend base URL in `api_client_provider.dart` is valid.
+Ensure a simulator/device is available and provide the backend base URL via Dart define, e.g. `flutter run --dart-define=API_BASE_URL=https://your-api`.
 - For iOS, open `ios/Runner.xcworkspace` if manual debugging in Xcode; run `pod install` after dependency changes.
 - For Android, ensure a device/emulator with camera permission granted for QR scanning.
 
 ## Key Files
 - `lib/core/network/api_client.dart` — Dio wrapper & error mapping.
-- `lib/core/network/api_client_provider.dart` — base URL provider.
+- `lib/core/network/api_client_provider.dart` — base URL provider (reads `API_BASE_URL`).
 - `lib/features/attraction/presentation/pages/attraction_list_page.dart` — list/search/refresh UI.
 - `lib/features/attraction/presentation/pages/attraction_page.dart` — detail page.
 - `lib/features/admin/presentation/pages/gate_validation_page.dart` — admin hub (QR validation + attraction creation).
@@ -77,4 +100,4 @@ Ensure a simulator/device is available and the backend base URL in `api_client_p
 - Consider surfacing 4xx API errors directly in UI instead of falling back.
 - Add CI checks (format, analyze, tests).
 - Introduce localization for strings (attractions, admin, splash).
-- Extract API base URL to env/config per flavor (dev/stage/prod).
+- Extract API base URL to env/config per flavor (dev/stage/prod) via `--dart-define` or flavor config files.
