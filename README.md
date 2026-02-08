@@ -85,17 +85,6 @@ An App for browsing attractions, booking tickets, and validating entries.
 ## Local Storage
 - `LocalStorage` stores user email/phone and admin JWT/name/email/role. Helper methods for save/clear/get.
 
-## How to Run (quick)
-```bash
-flutter pub get
-# iOS/macOS/Chrome
-flutter run --dart-define=API_BASE_URL=http://localhost:4000
-# Android emulator
-flutter run --dart-define=API_BASE_URL=http://10.0.2.2:4000
-```
-- When Flutter lists devices and asks “Please choose one”, pick the target matching the URL you passed (e.g., choose the Android emulator only if you used `10.0.2.2`).
-- For iOS, open `ios/Runner.xcworkspace` if manual debugging in Xcode; run `pod install` after dependency changes.
-- For Android, ensure an emulator/device with camera permission granted; use `10.0.2.2` for localhost backends.
 
 ## Key Files
 - `lib/core/network/api_client.dart` — Dio wrapper & error mapping.
