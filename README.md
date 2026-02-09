@@ -8,6 +8,9 @@
 ![Booking](assets/screenshots/booking.png)
 ![Email Booking](assets/screenshots/email_booking.png)
 
+## Demo Video
+[Demo Video](assets/screenshots/IMG_4391.MP4)
+
 ## Run Guide 
 1) Install tooling: Flutter SDK (stable), Xcode (for iOS), Android Studio + Android SDK/emulator (for Android). Add Flutter to PATH and accept Xcode licenses (`sudo xcodebuild -license`) if on macOS.
 2) Clone and fetch deps:
