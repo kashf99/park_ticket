@@ -1,5 +1,13 @@
 # Park Ticket
 
+## Screenshots
+![Homepage](assets/screenshots/homepage.png)
+![Search](assets/screenshots/home_search.png)
+![Select Date & Time](assets/screenshots/select_date_time.png)
+![Attraction Details](assets/screenshots/attraction_details.png)
+![Booking](assets/screenshots/booking.png)
+![Email Booking](assets/screenshots/email_booking.png)
+
 ## Run Guide 
 1) Install tooling: Flutter SDK (stable), Xcode (for iOS), Android Studio + Android SDK/emulator (for Android). Add Flutter to PATH and accept Xcode licenses (`sudo xcodebuild -license`) if on macOS.
 2) Clone and fetch deps:
@@ -31,6 +39,7 @@ flutter build apk   --dart-define=API_BASE_URL=https://api.example.com
    - “API_BASE_URL is not set” → rerun with the `--dart-define` flag above.
    - Connection error on Android emulator → rerun with `--dart-define=API_BASE_URL=http://10.0.2.2:4000` and ensure your backend is running/accessible.
    - Network errors on iOS/macOS → keep `http://localhost:<port>`; verify the backend process is up.
+   - QR scan requires a real Android or iOS device (camera). Emulators/simulators are not supported for scanning.
 
 An App for browsing attractions, booking tickets, and validating entries.
 
