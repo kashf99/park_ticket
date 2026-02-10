@@ -538,7 +538,7 @@ class _NewAttractionFormState extends ConsumerState<_NewAttractionForm> {
                 hSpaceM,
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value: _closingController.text,
+                    initialValue: _closingController.text,
                     items: _timeOptions
                         .map(
                           (time) => DropdownMenuItem<String>(

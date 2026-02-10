@@ -28,7 +28,7 @@ class AttractionsPage extends ConsumerWidget {
             error: (error, stackTrace) => _AttractionListError(
               message: _friendlyErrorMessage(error),
               onRetry: () {
-                ref.refresh(attractionsProvider);
+                ref.invalidate(attractionsProvider);
               },
             ),
           ),
@@ -219,7 +219,7 @@ class _AttractionListBody extends ConsumerWidget {
             child: filtered.isEmpty
                 ? _AttractionEmptyState(
                     onRefresh: () {
-                      ref.refresh(attractionsProvider);
+                      ref.invalidate(attractionsProvider);
                     },
                   )
                 : ListView.separated(
@@ -299,57 +299,57 @@ class _AttractionEmptyState extends StatelessWidget {
   }
 }
 
-class _AttractionListHeader extends StatelessWidget {
-  const _AttractionListHeader({
-    required this.controller,
-    required this.onQueryChanged,
-  });
+// class _AttractionListHeader extends StatelessWidget {
+//   const _AttractionListHeader({
+//     required this.controller,
+//     required this.onQueryChanged,
+//   });
 
-  final TextEditingController controller;
-  final ValueChanged<String> onQueryChanged;
+//   final TextEditingController controller;
+//   final ValueChanged<String> onQueryChanged;
 
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // SizedBox(height: 12.h),
-          // SingleChildScrollView(
-          //   scrollDirection: Axis.horizontal,
-          //   child: Row(
-          //     children:
-          //         [
-          //           _FilterChip(
-          //             label: 'All',
-          //             icon: Icons.place,
-          //             isSelected: true,
-          //           ),
-          //           _FilterChip(
-          //             label: 'Attractions',
-          //             icon: Icons.camera_alt_outlined,
-          //           ),
-          //           _FilterChip(label: 'Food', icon: Icons.restaurant_outlined),
-          //           _FilterChip(
-          //             label: 'Shopping',
-          //             icon: Icons.shopping_bag_outlined,
-          //           ),
-          //           _FilterChip(label: 'Nature', icon: Icons.park_outlined),
-          //         ].map((chip) {
-          //           return Padding(
-          //             padding: EdgeInsets.only(right: 10.w),
-          //             child: chip,
-          //           );
-          //         }).toList(),
-          //   ),
-          // ),
-          // SizedBox(height: 12.h),
-        ],
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Padding(
+//       padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 0),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           // SizedBox(height: 12.h),
+//           // SingleChildScrollView(
+//           //   scrollDirection: Axis.horizontal,
+//           //   child: Row(
+//           //     children:
+//           //         [
+//           //           _FilterChip(
+//           //             label: 'All',
+//           //             icon: Icons.place,
+//           //             isSelected: true,
+//           //           ),
+//           //           _FilterChip(
+//           //             label: 'Attractions',
+//           //             icon: Icons.camera_alt_outlined,
+//           //           ),
+//           //           _FilterChip(label: 'Food', icon: Icons.restaurant_outlined),
+//           //           _FilterChip(
+//           //             label: 'Shopping',
+//           //             icon: Icons.shopping_bag_outlined,
+//           //           ),
+//           //           _FilterChip(label: 'Nature', icon: Icons.park_outlined),
+//           //         ].map((chip) {
+//           //           return Padding(
+//           //             padding: EdgeInsets.only(right: 10.w),
+//           //             child: chip,
+//           //           );
+//           //         }).toList(),
+//           //   ),
+//           // ),
+//           // SizedBox(height: 12.h),
+//         ],
+//       ),
+//     );
+//   }
+// }
 
 // class _FilterChip extends StatelessWidget {
 //   const _FilterChip({

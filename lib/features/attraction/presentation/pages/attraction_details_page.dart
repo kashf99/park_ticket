@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:park_ticket/features/attraction/presentation/widgets/attraction_content.dart';
 import 'package:park_ticket/features/attraction/presentation/widgets/attraction_error.dart';
-import 'package:park_ticket/core/widgets/outline_chip_button.dart';
 
 import '../../domain/entities/attraction.dart';
 import '../providers/attraction_provider.dart';
@@ -19,7 +18,6 @@ class AttractionDetailsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final title = attraction?.name ?? 'Attraction Details';
 
     Widget buildBody(Widget child) {
       return Expanded(child: child);

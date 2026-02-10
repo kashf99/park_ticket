@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/utils/spacing.dart';
-import '../../../../core/widgets/section_card.dart';
+
 
 class AttractionHeroCard extends StatelessWidget {
   final String title;

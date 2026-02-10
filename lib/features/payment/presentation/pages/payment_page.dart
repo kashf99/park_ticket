@@ -27,19 +27,15 @@ class PaymentPage extends ConsumerWidget {
     final flowController = ref.read(paymentFlowControllerProvider.notifier);
 
     Future<void> confirmPayment() async {
-      print('Confirming payment...');
-      print(booking.totalCents);
-      print(booking.attractionId);
-      print(booking.email);
-      print(booking.qrToken);
-      print(booking.visitDate);
       final ticket = await flowController.confirm(booking);
       if (!context.mounted) return;
       if (ticket == null && flowController.state.errorMessage != null) {
         return;
       }
-      Navigator.of(context, rootNavigator: true)
-          .popUntil((route) => route.isFirst);
+      Navigator.of(
+        context,
+        rootNavigator: true,
+      ).popUntil((route) => route.isFirst);
       ref.read(appTabIndexProvider.notifier).state = 2;
       ref.invalidate(ticketHistoryRemoteProvider);
     }
