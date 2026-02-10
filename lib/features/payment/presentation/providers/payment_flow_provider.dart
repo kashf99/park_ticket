@@ -9,6 +9,8 @@ import '../../../ticket/domain/entities/ticket.dart';
 import '../../../ticket/presentation/providers/ticket_session_provider.dart';
 import '../../domain/entities/payment.dart';
 
+const _paymentUnset = Object();
+
 class PaymentFlowState {
   final bool isProcessing;
   final String? errorMessage;
@@ -31,12 +33,13 @@ class PaymentFlowState {
   PaymentFlowState copyWith({
     bool? isProcessing,
     String? errorMessage,
-    Payment? payment,
+    Object? payment = _paymentUnset,
   }) {
     return PaymentFlowState(
       isProcessing: isProcessing ?? this.isProcessing,
       errorMessage: errorMessage,
-      payment: payment ?? this.payment,
+      payment:
+          identical(payment, _paymentUnset) ? this.payment : payment as Payment?,
     );
   }
 }
@@ -45,25 +48,22 @@ class PaymentFlowController extends AutoDisposeNotifier<PaymentFlowState> {
   @override
   PaymentFlowState build() => PaymentFlowState.initial();
 
-  confirm(Booking booking) async {
+  Future<void> confirm(Booking booking) async {
     if (_isAlreadyProcessing()) return;
     _startProcessing();
     try {
-      await _ensureBookingHasId(booking);
-      //  final payment = await _confirmPaymentForBooking(confirmedBooking);
-      // final ticket = await _resolveTicket(confirmedBooking);
-      // _recordSuccessfulTicket(booking: confirmedBooking, ticket: ticket);
+      final confirmedBooking = await _ensureBookingHasId(booking);
+      _completePayment(confirmedBooking);
     } on ApiException catch (error) {
       if (error.type == ApiErrorType.unknown) {
-        _handleUnknownApiFailure(booking);
+        _completePayment(booking);
+        return;
       }
       debugPrint('PaymentFlow ApiException: $error');
       _setError(error.toString());
-      return null;
     } catch (error) {
       debugPrint('PaymentFlow error: $error');
       _setError(error.toString());
-      return null;
     } finally {
       _stopProcessing();
     }
@@ -72,7 +72,11 @@ class PaymentFlowController extends AutoDisposeNotifier<PaymentFlowState> {
   bool _isAlreadyProcessing() => state.isProcessing;
 
   void _startProcessing() {
-    state = state.copyWith(isProcessing: true, errorMessage: null);
+    state = state.copyWith(
+      isProcessing: true,
+      errorMessage: null,
+      payment: null,
+    );
   }
 
   void _stopProcessing() {
@@ -107,7 +111,6 @@ class PaymentFlowController extends AutoDisposeNotifier<PaymentFlowState> {
 
   void _recordSuccessfulTicket({
     required Booking booking,
-
     required Ticket ticket,
   }) {
     ref.read(lastTicketBookingIdProvider.notifier).state = booking.id;
@@ -116,21 +119,19 @@ class PaymentFlowController extends AutoDisposeNotifier<PaymentFlowState> {
     ref.read(ticketHistoryProvider.notifier).upsert(snapshot);
   }
 
-  Ticket _handleUnknownApiFailure(Booking booking) {
-    final fallbackBooking = booking.id.isEmpty
-        ? _withBookingId(booking)
-        : booking;
-    final ticket = _fallbackTicket(fallbackBooking);
+  void _completePayment(Booking booking) {
+    final finalizedBooking =
+        booking.id.isEmpty ? _withBookingId(booking) : booking;
+    final ticket = _fallbackTicket(finalizedBooking);
     final payment = Payment(
-      bookingId: fallbackBooking.id,
-      amountCents: fallbackBooking.totalCents,
+      bookingId: finalizedBooking.id,
+      amountCents: finalizedBooking.totalCents,
       status: 'confirmed',
-      booking: fallbackBooking,
+      booking: finalizedBooking,
       ticket: ticket,
     );
     state = state.copyWith(payment: payment, errorMessage: null);
-    _recordSuccessfulTicket(booking: fallbackBooking, ticket: ticket);
-    return ticket;
+    _recordSuccessfulTicket(booking: finalizedBooking, ticket: ticket);
   }
 }
 

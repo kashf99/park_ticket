@@ -48,10 +48,11 @@ class GateValidationPage extends ConsumerWidget {
       }
     }
 
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
         goHome();
-        return false;
       },
       child: GestureDetector(
         behavior: HitTestBehavior.translucent,

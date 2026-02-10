@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:park_ticket/core/theme/app_colors.dart';
-import 'package:park_ticket/core/utils/formatters.dart';
 import 'package:park_ticket/core/utils/spacing.dart';
 import 'package:park_ticket/core/widgets/outline_chip_button.dart';
 import 'package:park_ticket/core/widgets/primary_button.dart';
 import 'package:park_ticket/features/attraction/domain/entities/attraction.dart';
 import 'package:park_ticket/features/booking/domain/entities/booking.dart';
+import 'package:park_ticket/features/booking/presentation/providers/booking_form_key_provider.dart';
 import 'package:park_ticket/features/booking/presentation/providers/booking_form_provider.dart';
+import 'package:park_ticket/features/booking/presentation/providers/booking_service_provider.dart';
+import 'package:park_ticket/features/booking/presentation/providers/booking_view_model_provider.dart';
 import 'package:park_ticket/features/payment/presentation/pages/payment_page.dart';
 
 class BookingPage extends ConsumerWidget {
@@ -17,10 +19,13 @@ class BookingPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final attraction = this.attraction;
     final state = ref.watch(bookingFormControllerProvider);
     final notifier = ref.read(bookingFormControllerProvider.notifier);
-    final canProceed = ref.watch(bookingCanProceedProvider);
     final timeSlots = ref.watch(bookingTimeSlotsProvider(attraction));
+    final viewModel = ref.watch(bookingViewModelProvider(attraction));
+    final bookingService = ref.read(bookingServiceProvider);
+    final formKey = ref.watch(bookingFormKeyProvider);
 
     if (timeSlots.isNotEmpty && !timeSlots.contains(state.timeSlot)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -41,8 +46,6 @@ class BookingPage extends ConsumerWidget {
         notifier.setVisitDate(selected);
       }
     }
-
-    final totalCents = attraction.price * state.quantity;
 
     return Scaffold(
       body: SafeArea(
@@ -71,7 +74,7 @@ class BookingPage extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                attraction.name,
+                                viewModel.attractionName,
                                 style: Theme.of(context).textTheme.bodyMedium
                                     ?.copyWith(
                                       color: AppColors.inkMuted,
@@ -112,7 +115,7 @@ class BookingPage extends ConsumerWidget {
                               ],
                             ),
                             _DatePill(
-                              label: formatShortDate(state.visitDate),
+                              label: viewModel.visitDateLabel,
                               onTap: pickDate,
                             ),
                           ],
@@ -145,7 +148,7 @@ class BookingPage extends ConsumerWidget {
                                   ],
                                 ),
                                 Text(
-                                  state.timeSlot,
+                                  viewModel.timeSlotLabel,
                                   style: Theme.of(context).textTheme.titleMedium
                                       ?.copyWith(color: AppColors.inkMuted),
                                 ),
@@ -195,50 +198,58 @@ class BookingPage extends ConsumerWidget {
                             ),
                             vSpaceM,
                             _SummaryCard(
-                              priceLabel: formatPrice(attraction.price),
+                              priceLabel: viewModel.ticketPriceLabel,
                               quantity: state.quantity,
-                              totalLabel: formatPrice(totalCents),
+                              totalLabel: viewModel.totalPriceLabel,
                             ),
                           ],
                         ),
                       ),
                       vSpaceM,
                       _BookingCard(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Your details',
-                              style: Theme.of(context).textTheme.titleLarge,
-                            ),
-                            vSpaceM,
-                            Text(
-                              'Full name',
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                            vSpaceS,
-                            TextField(
-                              onChanged: notifier.setName,
-                              textInputAction: TextInputAction.next,
-                              decoration: const InputDecoration(
-                                hintText: 'e.g., Aisha Khan',
+                        child: Form(
+                          key: formKey,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Your details',
+                                style: Theme.of(context).textTheme.titleLarge,
                               ),
-                            ),
-                            vSpaceM,
-                            Text(
-                              'Email address',
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                            vSpaceS,
-                            TextField(
-                              onChanged: notifier.setEmail,
-                              keyboardType: TextInputType.emailAddress,
-                              textInputAction: TextInputAction.done,
-                              decoration: const InputDecoration(
-                                hintText: 'you@example.com',
+                              vSpaceM,
+                              Text(
+                                'Full name',
+                                style: Theme.of(context).textTheme.bodyMedium,
                               ),
-                            ),
-                          ],
+                              vSpaceS,
+                              TextFormField(
+                                initialValue: state.name,
+                                onChanged: notifier.setName,
+                                textInputAction: TextInputAction.next,
+                                validator: bookingService.validateName,
+                                decoration: const InputDecoration(
+                                  hintText: 'e.g., Aisha Khan',
+                                ),
+                              ),
+                              vSpaceM,
+                              Text(
+                                'Email address',
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                              vSpaceS,
+                              TextFormField(
+                                initialValue: state.email,
+                                onChanged: notifier.setEmail,
+                                keyboardType: TextInputType.emailAddress,
+                                textInputAction: TextInputAction.done,
+                                validator: bookingService.validateEmail,
+                                decoration: const InputDecoration(
+                                  hintText: 'you@example.com',
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       vSpaceM,
@@ -247,30 +258,32 @@ class BookingPage extends ConsumerWidget {
                         child: PrimaryButton(
                           label: 'Proceed to Payment',
                           trailingIcon: Icons.arrow_forward,
-                          onPressed: !canProceed
-                              ? null
-                              : () {
-                                  final booking = Booking(
-                                    id: '',
-                                    attractionId: attraction.id,
-                                    visitDate: state.visitDate,
-                                    timeSlot: state.timeSlot,
-                                    quantity: state.quantity,
-                                    name: state.name,
-                                    email: state.email,
-                                    totalCents: totalCents,
-                                    status: 'pending',
-                                    qrToken: null,
-                                  );
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute<void>(
-                                      builder: (_) => PaymentPage(
-                                        attraction: attraction,
-                                        booking: booking,
-                                      ),
-                                    ),
-                                  );
-                                },
+                          onPressed: () {
+                            FocusScope.of(context).unfocus();
+                            final isValid =
+                                formKey.currentState?.validate() ?? false;
+                            if (!isValid) return;
+                            final booking = Booking(
+                              id: '',
+                              attractionId: attraction.id,
+                              visitDate: state.visitDate,
+                              timeSlot: state.timeSlot,
+                              quantity: state.quantity,
+                              name: state.name,
+                              email: state.email,
+                              totalCents: viewModel.totalCents,
+                              status: 'pending',
+                              qrToken: null,
+                            );
+                            Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => PaymentPage(
+                                  attraction: attraction,
+                                  booking: booking,
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
                       vSpaceM,
