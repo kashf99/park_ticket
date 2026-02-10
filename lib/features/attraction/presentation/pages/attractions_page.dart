@@ -6,7 +6,7 @@ import 'package:park_ticket/core/theme/app_colors.dart';
 import 'package:park_ticket/core/utils/formatters.dart';
 import 'package:park_ticket/features/attraction/domain/entities/attraction.dart';
 import 'package:park_ticket/features/attraction/presentation/pages/attraction_details_page.dart';
-import 'package:park_ticket/features/attraction/presentation/providers/attraction_provider.dart';
+import 'package:park_ticket/features/attraction/di/attraction_di.dart';
 import 'package:park_ticket/features/splash/presentation/widgets/logo_mark.dart';
 
 class AttractionsPage extends ConsumerWidget {

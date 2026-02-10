@@ -5,7 +5,7 @@ import 'package:park_ticket/core/network/api_client.dart';
 import 'package:park_ticket/features/admin/presentation/pages/qr_scanner_page.dart';
 
 import '../../domain/entities/validation_result.dart';
-import 'admin_provider.dart';
+import 'package:park_ticket/features/admin/di/admin_di.dart';
 
 class GateValidationState {
   final bool isLoading;

@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:park_ticket/features/attraction/di/attraction_di.dart';
 
 import 'package:park_ticket/features/attraction/domain/entities/attraction.dart';
 import 'package:park_ticket/features/attraction/presentation/pages/attractions_page.dart';
-import 'package:park_ticket/features/attraction/presentation/providers/attraction_provider.dart';
 
 void main() {
   final sample = [

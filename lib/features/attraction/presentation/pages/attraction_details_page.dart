@@ -4,7 +4,7 @@ import 'package:park_ticket/features/attraction/presentation/widgets/attraction_
 import 'package:park_ticket/features/attraction/presentation/widgets/attraction_error.dart';
 
 import '../../domain/entities/attraction.dart';
-import '../providers/attraction_provider.dart';
+import 'package:park_ticket/features/attraction/di/attraction_di.dart';
 
 class AttractionDetailsPage extends ConsumerWidget {
   const AttractionDetailsPage({

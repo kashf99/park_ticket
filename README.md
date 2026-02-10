@@ -23,14 +23,21 @@ flutter pub get
    - Localhost matrix:
      - iOS/macOS/Chrome: `http://localhost:4000`
      - Android emulator: `http://10.0.2.2:4000` (emulator loopback to host)
-     - Physical Android device: your machine IP, e.g. `http://192.168.x.x:4000`
+     - Physical Android device (Wi-Fi): your machine IP, e.g. `http://192.168.x.x:4000`
+     - Physical Android device (USB): use `adb reverse` and `http://127.0.0.1:4000`
    - Examples:
 ```bash
 flutter run --dart-define=API_BASE_URL=http://localhost:4000          # iOS sim/macOS/web
 flutter run --dart-define=API_BASE_URL=http://10.0.2.2:4000          # Android emulator
+adb reverse tcp:4000 tcp:4000                                         # Android device via USB
+flutter run -d <device_id> --dart-define=API_BASE_URL=http://127.0.0.1:4000
 flutter run --dart-define=API_BASE_URL=https://api.example.com       # hosted API
 ```
    - When Flutter shows “Please choose one” after listing devices, pick the target that matches the URL you passed (e.g., choose the Android emulator only if you used `10.0.2.2`).
+   - If `adb reverse` says “more than one device/emulator”, add `-s <device_id>`:
+```bash
+adb -s <device_id> reverse tcp:4000 tcp:4000
+```
    - iOS: ensure a simulator or device is available. From this folder you can also run `open ios/Runner.xcworkspace` for Xcode debugging.
    - Android: start an emulator or plug in a device with developer mode enabled.
 4) Build app bundles (optional):
@@ -82,8 +89,7 @@ An App for browsing attractions, booking tickets, and validating entries.
 
 ## Error & Fallback Behavior
 - `ApiClient` maps Dio errors to `ApiException` types: cancelled, timeout, badResponse, network, invalidResponse, unknown.
-- Attractions list: falls back only on network/unknown; otherwise surfaces errors.
-- Attraction detail: falls back on network/unknown; other API errors propagate.
+- Attractions list/detail: no demo fallback data; API errors surface to the UI.
 
 ## Refresh & Search
 - Attractions list uses `RefreshIndicator` + `ref.refresh(attractionsProvider.future)`.

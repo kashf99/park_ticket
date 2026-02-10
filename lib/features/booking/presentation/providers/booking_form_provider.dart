@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:park_ticket/features/attraction/domain/entities/attraction.dart';
 
-import 'booking_service_provider.dart';
+import 'package:park_ticket/features/booking/di/booking_di.dart';
 
 class BookingFormState {
   final DateTime visitDate;

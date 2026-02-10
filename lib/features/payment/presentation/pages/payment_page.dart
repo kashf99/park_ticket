@@ -9,7 +9,7 @@ import 'package:park_ticket/features/booking/domain/entities/booking.dart';
 import 'package:park_ticket/core/widgets/app_shell.dart';
 import 'package:park_ticket/features/payment/presentation/providers/payment_flow_provider.dart';
 import 'package:park_ticket/features/payment/presentation/view_models/payment_summary_view_model.dart';
-import 'package:park_ticket/features/ticket/presentation/providers/ticket_provider.dart';
+import 'package:park_ticket/features/ticket/di/ticket_di.dart';
 
 class PaymentPage extends ConsumerWidget {
   final Attraction attraction;

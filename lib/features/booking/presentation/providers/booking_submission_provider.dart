@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/booking.dart';
-import 'booking_provider.dart';
+import 'package:park_ticket/features/booking/di/booking_di.dart';
 
 class BookingSubmissionState {
   final bool isSubmitting;
