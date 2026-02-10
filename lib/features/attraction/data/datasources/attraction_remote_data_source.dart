@@ -19,18 +19,16 @@ class AttractionRemoteDataSourceImpl implements AttractionRemoteDataSource {
       final json = await client.get('/api/attractions/$id');
       final data = _extractAttraction(json);
       if (data.isEmpty) {
-        return _fallbackAttraction(id);
+        throw ApiException(
+          message: 'Attraction data not available.',
+          type: ApiErrorType.invalidResponse,
+          path: '/api/attractions/$id',
+          data: json,
+        );
       }
       return AttractionModel.fromJson(data);
     } on ApiException catch (error) {
       debugPrint('Attraction detail API error: $error');
-      // Only fallback for connection/unknown issues to avoid masking API errors.
-      final shouldFallback =
-          error.type == ApiErrorType.unknown ||
-          error.type == ApiErrorType.network;
-      if (shouldFallback) {
-        return _fallbackAttraction(id);
-      }
       rethrow;
     }
   }
@@ -53,28 +51,8 @@ class AttractionRemoteDataSourceImpl implements AttractionRemoteDataSource {
       return rawList.map((item) => AttractionModel.fromJson(item)).toList();
     } on ApiException catch (error) {
       debugPrint('Attractions API error: $error');
-      final shouldFallback =
-          error.type == ApiErrorType.unknown ||
-          error.type == ApiErrorType.network;
-      if (shouldFallback) {
-        return _fallbackAttractions();
-      }
       rethrow;
     }
-  }
-
-  AttractionModel _fallbackAttraction(String id) {
-    return AttractionModel(
-      id: id,
-      name: 'Dubai Frame',
-      description:
-          'Details are temporarily unavailable. Please check back soon.',
-      openingTime: '09:00 AM',
-      closingTime: '06:00 PM',
-      price: 50,
-      featuredImage:
-          'https://img.freepik.com/premium-photo/13-january-2023-uae-dubai-dubai-frame-striking-gold-color-impressive-height-it-is-mustsee-attraction-anyone-visiting-city_984126-44.jpg?semt=ais_hybrid&w=740&q=80',
-    );
   }
 
   List<Map<String, dynamic>> _extractAttractionList(JsonMap json) {
@@ -103,52 +81,4 @@ class AttractionRemoteDataSourceImpl implements AttractionRemoteDataSource {
     return <String, dynamic>{};
   }
 
-  List<AttractionModel> _fallbackAttractions() {
-    return const [
-      AttractionModel(
-        id: '1',
-        name: 'Emerald Lake',
-        description:
-            'Crystal-clear waters surrounded by alpine peaks and pine forests.',
-        openingTime: '08:00 AM',
-        closingTime: '06:00 PM',
-        price: 40,
-        featuredImage:
-            'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=80',
-      ),
-      AttractionModel(
-        id: '2',
-        name: 'Skyline Viewpoint',
-        description:
-            'A panoramic city overlook with sunset views and photo spots.',
-        openingTime: '09:00 AM',
-        closingTime: '09:00 PM',
-        price: 30,
-        featuredImage:
-            'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1200&q=80',
-      ),
-      AttractionModel(
-        id: '3',
-        name: 'Riverside Market',
-        description:
-            'Local street food, artisan stalls, and live music by the river.',
-        openingTime: '10:00 AM',
-        closingTime: '11:00 PM',
-        price: 20,
-        featuredImage:
-            'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
-      ),
-      AttractionModel(
-        id: '4',
-        name: 'Heritage Museum',
-        description:
-            'Interactive exhibits celebrating culture, art, and history.',
-        openingTime: '09:00 AM',
-        closingTime: '05:00 PM',
-        price: 25,
-        featuredImage:
-            'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1200&q=80',
-      ),
-    ];
-  }
 }

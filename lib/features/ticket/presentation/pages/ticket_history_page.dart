@@ -6,7 +6,7 @@ import 'package:park_ticket/core/utils/spacing.dart';
 import 'package:park_ticket/core/widgets/outline_chip_button.dart';
 import 'package:park_ticket/core/widgets/primary_button.dart';
 import 'package:park_ticket/features/ticket/presentation/pages/ticket_confirmation_page.dart';
-import 'package:park_ticket/features/ticket/presentation/providers/ticket_provider.dart';
+import 'package:park_ticket/features/ticket/di/ticket_di.dart';
 import 'package:park_ticket/features/ticket/presentation/providers/ticket_session_provider.dart';
 
 class TicketHistoryPage extends ConsumerWidget {

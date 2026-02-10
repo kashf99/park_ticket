@@ -13,7 +13,7 @@ import 'package:park_ticket/core/widgets/app_shell.dart';
 import 'package:park_ticket/core/widgets/outline_chip_button.dart';
 import 'package:park_ticket/core/widgets/primary_button.dart';
 import 'package:park_ticket/features/admin/presentation/providers/gate_validation_provider.dart';
-import 'package:park_ticket/features/attraction/presentation/providers/attraction_provider.dart';
+import 'package:park_ticket/features/attraction/di/attraction_di.dart';
 
 class GateValidationPage extends ConsumerWidget {
   const GateValidationPage({super.key});

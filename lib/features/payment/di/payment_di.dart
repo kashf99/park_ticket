@@ -1,11 +1,10 @@
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-// import '../../../../core/network/api_client_provider.dart';
-// import '../../data/datasources/payment_remote_data_source.dart';
-// import '../../data/repositories/payment_repository_impl.dart';
-// import '../../domain/entities/payment.dart';
-// import '../../domain/repositories/payment_repository.dart';
-// import '../../domain/usecases/confirm_payment.dart';
+// import 'package:park_ticket/core/network/api_client_provider.dart';
+// import 'package:park_ticket/features/payment/data/datasources/payment_remote_data_source.dart';
+// import 'package:park_ticket/features/payment/data/repositories/payment_repository_impl.dart';
+// import 'package:park_ticket/features/payment/domain/entities/payment.dart';
+// import 'package:park_ticket/features/payment/domain/repositories/payment_repository.dart';
+// import 'package:park_ticket/features/payment/domain/usecases/confirm_payment.dart';
 
 // final paymentRemoteDataSourceProvider = Provider<PaymentRemoteDataSource>((ref) {
 //   final client = ref.read(apiClientProvider);

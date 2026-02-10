@@ -5,10 +5,10 @@ import 'package:park_ticket/core/utils/spacing.dart';
 import 'package:park_ticket/core/widgets/outline_chip_button.dart';
 import 'package:park_ticket/core/widgets/primary_button.dart';
 import 'package:park_ticket/features/attraction/domain/entities/attraction.dart';
+import 'package:park_ticket/features/booking/di/booking_di.dart';
 import 'package:park_ticket/features/booking/domain/entities/booking.dart';
 import 'package:park_ticket/features/booking/presentation/providers/booking_form_key_provider.dart';
 import 'package:park_ticket/features/booking/presentation/providers/booking_form_provider.dart';
-import 'package:park_ticket/features/booking/presentation/providers/booking_service_provider.dart';
 import 'package:park_ticket/features/booking/presentation/providers/booking_view_model_provider.dart';
 import 'package:park_ticket/features/payment/presentation/pages/payment_page.dart';
 

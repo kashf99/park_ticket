@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:park_ticket/core/network/api_client.dart';
 
 import '../../../booking/domain/entities/booking.dart';
-import '../../../booking/presentation/providers/booking_provider.dart';
+import 'package:park_ticket/features/booking/di/booking_di.dart';
 import '../../../ticket/domain/entities/ticket.dart';
 import '../../../ticket/presentation/providers/ticket_session_provider.dart';
 import '../../domain/entities/payment.dart';
