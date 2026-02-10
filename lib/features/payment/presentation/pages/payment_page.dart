@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:park_ticket/core/theme/app_colors.dart';
-import 'package:park_ticket/core/utils/formatters.dart';
 import 'package:park_ticket/core/utils/spacing.dart';
 import 'package:park_ticket/core/widgets/outline_chip_button.dart';
 import 'package:park_ticket/core/widgets/primary_button.dart';
@@ -9,6 +8,7 @@ import 'package:park_ticket/features/attraction/domain/entities/attraction.dart'
 import 'package:park_ticket/features/booking/domain/entities/booking.dart';
 import 'package:park_ticket/core/widgets/app_shell.dart';
 import 'package:park_ticket/features/payment/presentation/providers/payment_flow_provider.dart';
+import 'package:park_ticket/features/payment/presentation/view_models/payment_summary_view_model.dart';
 import 'package:park_ticket/features/ticket/presentation/providers/ticket_provider.dart';
 
 class PaymentPage extends ConsumerWidget {
@@ -25,19 +25,28 @@ class PaymentPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final flowState = ref.watch(paymentFlowControllerProvider);
     final flowController = ref.read(paymentFlowControllerProvider.notifier);
+    final summary =
+        PaymentSummaryViewModel.from(attraction: attraction, booking: booking);
+
+    ref.listen<PaymentFlowState>(
+      paymentFlowControllerProvider,
+      (previous, next) {
+        if (!context.mounted) return;
+        final hadPayment = previous?.payment != null;
+        final hasPayment = next.payment != null;
+        if (!hadPayment && hasPayment) {
+          Navigator.of(
+            context,
+            rootNavigator: true,
+          ).popUntil((route) => route.isFirst);
+          ref.read(appTabIndexProvider.notifier).state = 2;
+          ref.invalidate(ticketHistoryRemoteProvider);
+        }
+      },
+    );
 
     Future<void> confirmPayment() async {
-      final ticket = await flowController.confirm(booking);
-      if (!context.mounted) return;
-      if (ticket == null && flowController.state.errorMessage != null) {
-        return;
-      }
-      Navigator.of(
-        context,
-        rootNavigator: true,
-      ).popUntil((route) => route.isFirst);
-      ref.read(appTabIndexProvider.notifier).state = 2;
-      ref.invalidate(ticketHistoryRemoteProvider);
+      await flowController.confirm(booking);
     }
 
     return Scaffold(
@@ -102,11 +111,11 @@ class PaymentPage extends ConsumerWidget {
                                     color: const Color(0xFFE7F3FB),
                                     borderRadius: BorderRadius.circular(16),
                                   ),
-                                  child: const Icon(
-                                    Icons.verified_user_outlined,
-                                    color: Color(0xFF0B6FA5),
-                                  ),
-                                ),
+                              child: const Icon(
+                                Icons.verified_user_outlined,
+                                color: Color(0xFF0B6FA5),
+                              ),
+                            ),
                                 hSpaceS,
                                 Text(
                                   'This is a simulated payment.',
@@ -116,14 +125,11 @@ class PaymentPage extends ConsumerWidget {
                             ),
                             vSpaceM,
                             _SummaryPanel(
-                              attractionName: attraction.name,
-                              dateLabel: booking.visitDate
-                                  .toIso8601String()
-                                  .split('T')
-                                  .first,
-                              timeLabel: booking.timeSlot,
-                              tickets: booking.quantity,
-                              totalLabel: formatPrice(booking.totalCents),
+                              attractionName: summary.attractionName,
+                              dateLabel: summary.dateLabel,
+                              timeLabel: summary.timeLabel,
+                              tickets: summary.tickets,
+                              totalLabel: summary.totalLabel,
                             ),
                           ],
                         ),
